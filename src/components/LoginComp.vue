@@ -69,16 +69,12 @@
 <script>
 import { ref } from "@vue/reactivity";
 import { useQuasar } from "quasar";
-import { getAuth, signInWithEmailAndPassword, signOut } from "firebase/auth";
-import { getDatabase, ref as fireref, child, get } from "firebase/database";
 import { useRouter } from "vue-router";
 
 export default {
   name: "LoginComp",
   setup() {
     const $q = useQuasar();
-    const dbRef = fireref(getDatabase());
-    const auth = getAuth();
     const correo = ref("");
     const refcorreo = ref("");
     const contraseña = ref("");

@@ -1,5 +1,5 @@
 <template>
-  <div class="q-pa-md shadow-1" style="width: 600px">
+  <div class="q-pa-md shadow-1 bg-white" style="width: 600px">
     <q-form
       @submit.prevent.stop="onSubmit"
       @reset.prevent.stop="onReset"
@@ -108,19 +108,10 @@
 import { ref } from "@vue/reactivity";
 import { useQuasar } from "quasar";
 import { computed } from "@vue/runtime-core";
-import { getDatabase, ref as refdb, set } from "firebase/database";
-import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  updateProfile,
-} from "firebase/auth";
 
 export default {
   name: "CrearUsuario",
   setup() {
-    const $q = useQuasar();
-    const db = getDatabase();
-    const auth = getAuth();
     const nombre = ref(null);
     const contraseña = ref(null);
     const reContraseña = ref(null);

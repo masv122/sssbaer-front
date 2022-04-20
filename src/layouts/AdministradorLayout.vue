@@ -142,7 +142,7 @@ import {
   equalTo,
 } from "firebase/database";
 export default {
-  name: "GooglePhotosLayout",
+  name: "AdministradorLayout",
   setup() {
     const db = getDatabase();
     const redb = refdb(db, "solicitudes/");
