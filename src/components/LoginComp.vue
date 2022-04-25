@@ -39,12 +39,6 @@
             </template>
           </q-input>
 
-          <q-toggle
-            color="negative"
-            v-model="admi"
-            label="¿Eres Administrador?"
-          />
-
           <div>
             <q-btn
               label="Ingresar"
@@ -70,6 +64,8 @@
 import { ref } from "@vue/reactivity";
 import { useQuasar } from "quasar";
 import { useRouter } from "vue-router";
+import { api } from "boot/axios";
+import { useSesion } from "src/stores/sesion";
 
 export default {
   name: "LoginComp",
@@ -80,7 +76,7 @@ export default {
     const contraseña = ref("");
     const refContraseña = ref("");
     const esVisible = ref(true);
-    const admi = ref(false);
+    const sesion = useSesion();
     const router = useRouter();
     return {
       correo,
@@ -88,10 +84,7 @@ export default {
       contraseña,
       refContraseña,
       esVisible,
-      admi,
       async onSubmit() {
-        refcorreo.value.validate();
-        refContraseña.value.validate();
         if (refcorreo.value.hasError || refContraseña.value.hasError) {
           $q.notify({
             color: "negative",
@@ -99,40 +92,19 @@ export default {
           });
         } else {
           try {
-            const userCredential = await signInWithEmailAndPassword(
-              auth,
-              correo.value,
-              contraseña.value
-            );
-            const user = userCredential.user;
-            const resultado = await get(
-              child(
-                dbRef,
-                `usuarios/${admi.value ? "admis" : "trabajadores"}/${user.uid}`
-              )
-            );
-            if (resultado.exists()) {
-              if (admi.value) router.push({ name: "administrador" });
-              else router.push({ name: "usuario" });
-            } else {
-              const auth = getAuth();
-              await signOut(auth);
-              $q.notify({
-                color: "negative",
-                message: "Usuario no encontrado",
-              });
+            const userCredential = await api.post("/login", {
+              email: correo.value,
+              password: contraseña.value,
+            });
+            if (userCredential.status === 200) {
+              sesion.data.token = userCredential.data;
+              router.push({ name: "usuario" });
             }
           } catch (error) {
-            const errorCode = error.code;
-            const errorMessage = error.message;
-            if (errorCode === "auth/invalid-email")
-              $q.notify({
-                color: "negative",
-                message: "Correo invalido",
-              });
-            console.log(error);
-            console.log(errorCode);
-            console.log(errorMessage);
+            $q.notify({
+              type: "warning",
+              message: "Usuario/Contraseña invalidas",
+            });
           }
         }
       },

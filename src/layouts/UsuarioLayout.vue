@@ -14,30 +14,29 @@
 import MenuUsuario from "components/MenuUsuario.vue";
 import HeaderUsuario from "src/components/HeaderUsuario.vue";
 import { onBeforeMount } from "@vue/runtime-core";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "vue-router";
 import { useSesion } from "stores/sesion";
+import { api } from "src/boot/axios";
 export default {
   components: {
     MenuUsuario,
     HeaderUsuario,
   },
   setup() {
-    const auth = getAuth();
     const sesion = useSesion();
     const router = useRouter();
-    const authListener = () => {
-      onAuthStateChanged(auth, (user) => {
-        if (user) {
-          sesion.sesion = user;
-          router.push({ name: "crear solicitud" });
-        } else {
-          router.push({ name: "ingreso" });
-        }
-      });
-    };
-    onBeforeMount(() => {
-      authListener();
+    onBeforeMount(async () => {
+      try {
+        const config = {
+          headers: {
+            Authorization: `Bearer ${sesion.data.token.access_token}`,
+          },
+        };
+        const user = await api.get("/info-user", config);
+        sesion.data.user = user.data;
+      } catch (error) {
+        console.log(error);
+      }
     });
     return {};
   },

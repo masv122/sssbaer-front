@@ -54,15 +54,6 @@
 <script>
 import { onMounted, ref, computed, watch, reactive } from "@vue/runtime-core";
 import { useQuasar } from "quasar";
-import {
-  getDatabase,
-  ref as refdb,
-  onValue,
-  orderByChild,
-  query,
-  equalTo,
-  onChildChanged,
-} from "firebase/database";
 import { useSesion } from "stores/sesion";
 import AdministradorComp from "components/AdministradorComp.vue";
 const columns = [

@@ -53,13 +53,12 @@ import { ref } from "vue";
 import { v4 as uuidv4 } from "uuid";
 import { useQuasar } from "quasar";
 import { useSesion } from "stores/sesion";
-import { getDatabase, ref as refdb, set, push } from "firebase/database";
+import { api } from "src/boot/axios";
 
 export default {
   setup() {
     const $q = useQuasar();
-    const db = getDatabase();
-    const sesion = useSesion().sesion;
+    const sesion = useSesion();
     const coordinacion = ref(null);
     const problema = ref(null);
     const comentarioAdicional = ref("");
@@ -87,7 +86,7 @@ export default {
       refCoordinacion,
       refComentarioAdicional,
 
-      onSubmit() {
+      async onSubmit() {
         refProblema.value.validate();
         refCoordinacion.value.validate();
         refComentarioAdicional.value.validate();
@@ -102,18 +101,22 @@ export default {
           });
         } else {
           try {
-            const id = uuidv4();
-            const postListRef = refdb(db, "solicitudes");
-            const newPostRef = push(postListRef);
-            set(newPostRef, {
+            const solicitud = {
               coordinacion: coordinacion.value,
               problema: problema.value,
               comentarioAdicional: comentarioAdicional.value,
               enProceso: false,
               terminada: false,
-              usuario: sesion.uid,
+              usuario: sesion.data.user.id,
               administrador: "",
-            });
+            };
+            const config = {
+              headers: {
+                Authorization: `Bearer ${sesion.data.token.access_token}`,
+              },
+            };
+            const response = await api.post("/solicitudes", solicitud, config);
+            console.log(response);
 
             $q.notify({
               color: "positive",
@@ -121,11 +124,7 @@ export default {
             });
             resetForm();
           } catch (error) {
-            const errorCode = error.code;
-            const errorMessage = error.message;
-            console.log(error);
-            console.log(errorCode);
-            console.log(errorMessage);
+            console.log(error.response);
             $q.notify({
               color: "negative",
               message: "Error al crear la solicitud",

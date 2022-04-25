@@ -6,8 +6,6 @@
 
 <script>
 import { defineComponent } from "vue";
-import FormularioSolicitud from "components/FormularioSolicitud.vue";
-import SolicitudesUsuario from "components/SolicitudesUsuario.vue";
 
 export default defineComponent({
   name: "IndexPage",

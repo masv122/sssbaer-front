@@ -79,13 +79,13 @@
           <q-radio
             ref="refTipoDeCuenta"
             v-model="tipoDeCuenta"
-            :val="1"
+            :val="false"
             label="Usuario"
           />
           <q-radio
             ref="refTipoDeCuenta"
             v-model="tipoDeCuenta"
-            :val="0"
+            :val="true"
             label="Administrador"
           />
         </div>
@@ -108,15 +108,17 @@
 import { ref } from "@vue/reactivity";
 import { useQuasar } from "quasar";
 import { computed } from "@vue/runtime-core";
+import { api } from "src/boot/axios";
 
 export default {
   name: "CrearUsuario",
   setup() {
+    const $q = useQuasar();
     const nombre = ref(null);
     const contraseña = ref(null);
     const reContraseña = ref(null);
     const correo = ref(null);
-    const tipoDeCuenta = ref(1);
+    const tipoDeCuenta = ref(false);
     const refUsuario = ref(null);
     const refNombre = ref(null);
     const esVisible = ref(true);
@@ -133,7 +135,7 @@ export default {
       reContraseña.value = "";
       correo.value = "";
       esVisible.value = true;
-      tipoDeCuenta.value = 1;
+      tipoDeCuenta.value = false;
     };
     return {
       nombre,
@@ -169,39 +171,23 @@ export default {
             message: "Las contraseñas deben coincidir",
           });
         } else {
+          const usuario = {
+            name: nombre.value,
+            email: correo.value,
+            password: contraseña.value,
+            admi: tipoDeCuenta.value,
+          };
+          console.log(usuario);
           try {
-            const userCredential = await createUserWithEmailAndPassword(
-              auth,
-              correo.value,
-              contraseña.value
-            );
-            const user = userCredential.user;
-            await updateProfile(user, {
-              displayName: nombre.value,
-            });
-            await set(
-              refdb(
-                db,
-                `usuarios/${
-                  tipoDeCuenta.value === 0 ? "admis" : "trabajadores"
-                }/${user.uid}`
-              ),
-              {
-                nombre: nombre.value,
-                correo: correo.value,
-              }
-            );
+            const userCredential = await api.post("/register", usuario);
+            console.log(userCredential);
             $q.notify({
               color: "positive",
               message: "Usuario Creado",
             });
             resetForm();
           } catch (error) {
-            const errorCode = error.code;
-            const errorMessage = error.message;
-            console.log(error);
-            console.log(errorCode);
-            console.log(errorMessage);
+            console.log(error.response.data);
             $q.notify({
               color: "negative",
               message:

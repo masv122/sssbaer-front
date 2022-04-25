@@ -36,8 +36,8 @@
         <q-avatar size="56px" class="q-mb-sm">
           <q-icon name="person" size="1.5em"
         /></q-avatar>
-        <div class="text-weight-bold text-h6">{{ sesion.displayName }}</div>
-        <div>{{ sesion.email }}</div>
+        <div class="text-weight-bold text-h6">{{ usuario.name }}</div>
+        <div>{{ usuario.email }}</div>
       </div>
     </q-img>
   </q-drawer>
@@ -48,9 +48,9 @@ import { useSesion } from "stores/sesion";
 export default {
   name: "MenuUsuario",
   setup() {
-    const sesion = useSesion().sesion;
+    const usuario = useSesion().data.user;
     return {
-      sesion,
+      usuario,
     };
   },
 };

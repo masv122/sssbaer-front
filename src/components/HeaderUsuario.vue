@@ -21,7 +21,6 @@
 </template>
 
 <script>
-import { getAuth, signOut } from "@firebase/auth";
 import { useRouter } from "vue-router";
 export default {
   name: "HeaderUsuario",
