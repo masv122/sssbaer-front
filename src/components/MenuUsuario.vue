@@ -45,10 +45,16 @@
 
 <script>
 import { useSesion } from "stores/sesion";
+import { watch } from "@vue/runtime-core";
 export default {
   name: "MenuUsuario",
   setup() {
-    const usuario = useSesion().data.user;
+    const sesion = useSesion();
+    const usuario = sesion.data.user;
+    watch(sesion, (newSesion) => {
+      usuario.email = newSesion.data.user.email;
+      usuario.name = newSesion.data.user.name;
+    });
     return {
       usuario,
     };

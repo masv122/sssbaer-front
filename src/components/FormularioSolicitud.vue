@@ -5,28 +5,31 @@
         <div class="text-h5">Formulario de solicitud</div>
         <q-separator inset />
         <q-select
-          standout="bg-teal text-white"
+          outlined
           class="q-mb-lg"
           ref="refCoordinacion"
           style="max-width: 300px"
           v-model="coordinacion"
           :options="coordinaciones"
           label="Coordinación"
+          :rules="[(val) => !!val || '* Seleccione una coordinacion']"
+          lazy-rules
         />
 
         <q-select
-          standout="bg-teal text-white"
+          outlined
           style="max-width: 300px"
           class="q-mb-lg"
           ref="refProblema"
           v-model="problema"
           :options="tipoDeProblema"
           label="Tipo de problema"
+          :rules="[(val) => !!val || '* Seleccione un tipo de problema']"
+          lazy-rules
         />
 
         <q-input
           class="q-mb-lg"
-          ref="refComentarioAdicional"
           label="Comentarios adicionales"
           v-model="comentarioAdicional"
           filled
@@ -64,7 +67,6 @@ export default {
     const comentarioAdicional = ref("");
     const refProblema = ref(null);
     const refCoordinacion = ref(null);
-    const refComentarioAdicional = ref(null);
     const resetForm = function () {
       coordinacion.value = null;
       problema.value = null;
@@ -84,17 +86,12 @@ export default {
       tipoDeProblema: ["Internet", "Equipo", "Otro"],
       refProblema,
       refCoordinacion,
-      refComentarioAdicional,
 
       async onSubmit() {
+        console.log(refProblema.value, refCoordinacion.value);
         refProblema.value.validate();
         refCoordinacion.value.validate();
-        refComentarioAdicional.value.validate();
-        if (
-          refProblema.value.hasError ||
-          refCoordinacion.value.hasError ||
-          refComentarioAdicional.value.hasError
-        ) {
+        if (refProblema.value.hasError || refCoordinacion.value.hasError) {
           $q.notify({
             color: "negative",
             message: "Falta informacion",
@@ -107,7 +104,7 @@ export default {
               comentarioAdicional: comentarioAdicional.value,
               enProceso: false,
               terminada: false,
-              usuario: sesion.data.user.id,
+              idUsuario: sesion.data.user.id,
               administrador: "",
             };
             const config = {
@@ -117,11 +114,16 @@ export default {
             };
             const response = await api.post("/solicitudes", solicitud, config);
             console.log(response);
-
-            $q.notify({
-              color: "positive",
-              message: "Solicitud creada",
-            });
+            if (response.data.message === "ok")
+              $q.notify({
+                color: "positive",
+                message: "Solicitud creada",
+              });
+            else
+              $q.notify({
+                color: "negative",
+                message: "datos invalidos",
+              });
             resetForm();
           } catch (error) {
             console.log(error.response);

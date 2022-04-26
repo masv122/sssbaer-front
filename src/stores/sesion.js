@@ -4,7 +4,7 @@ export const useSesion = defineStore("sesion", {
   state: () => ({
     data: {
       user: {
-        displayName: "",
+        name: "",
         email: "",
         id: "",
       },

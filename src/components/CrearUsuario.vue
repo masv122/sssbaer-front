@@ -179,8 +179,7 @@ export default {
           };
           console.log(usuario);
           try {
-            const userCredential = await api.post("/register", usuario);
-            console.log(userCredential);
+            await api.post("/register", usuario);
             $q.notify({
               color: "positive",
               message: "Usuario Creado",

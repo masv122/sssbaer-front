@@ -56,6 +56,7 @@ import { onMounted, ref, computed, watch, reactive } from "@vue/runtime-core";
 import { useQuasar } from "quasar";
 import { useSesion } from "stores/sesion";
 import AdministradorComp from "components/AdministradorComp.vue";
+import { api } from "src/boot/axios";
 const columns = [
   { name: "coordinacion", label: "Coordinacion", field: "coordinacion" },
   { name: "problema", label: "Tipo de problema", field: "problema" },
@@ -70,36 +71,19 @@ export default {
   components: {
     AdministradorComp,
   },
+  name: "SolicitudesUsuario",
   setup() {
-    const db = getDatabase();
     const $q = useQuasar();
-    const sesion = useSesion().sesion;
+    const sesion = useSesion();
+    const usuario = sesion.data.user;
     const solicitudes = reactive([]);
-    onMounted(() => {
-      var redb = query(
-        refdb(db, "solicitudes/"),
-        orderByChild("usuario"),
-        equalTo(sesion.uid)
-      );
-      onValue(
-        redb,
-        (snapshot) => {
-          snapshot.forEach((childSnapshot) => {
-            var solicitud = childSnapshot.val();
-            solicitud.key = childSnapshot.key;
-            solicitudes.push(solicitud);
-          });
-        },
-        {
-          onlyOnce: true,
-        }
-      );
-      onChildChanged(redb, (data) => {
-        const refSolicitudes = solicitudes;
-        const posicion = refSolicitudes.findIndex(
-          (soli) => soli.key === data.key
-        );
-        solicitudes[posicion] = data.val();
+    onMounted(async () => {
+      const response = await api.post("/solicitudes-usuario", {
+        id: usuario.id,
+      });
+      const solicitudesResponse = response.data.solicitudes;
+      solicitudesResponse.forEach((solicitud) => {
+        solicitudes.push(solicitud);
       });
     });
     return {
