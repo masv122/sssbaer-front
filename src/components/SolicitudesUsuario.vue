@@ -78,9 +78,13 @@ export default {
     const usuario = sesion.data.user;
     const solicitudes = reactive([]);
     onMounted(async () => {
-      const response = await api.post("/solicitudes-usuario", {
-        id: usuario.id,
-      });
+      const response = await api.post(
+        "/solicitudes-usuario",
+        {
+          id: usuario.id,
+        },
+        sesion.authorizacion
+      );
       const solicitudesResponse = response.data.solicitudes;
       solicitudesResponse.forEach((solicitud) => {
         solicitudes.push(solicitud);

@@ -3,7 +3,7 @@
     title="Mis solicitudes"
     :rows="solicitudes"
     :columns="columns"
-    row-key="enProceso"
+    row-key="id"
     grid
     hide-header
   >
@@ -15,8 +15,8 @@
         <q-card :class="props.selected ? 'bg-grey-2' : ''">
           <q-card-section
             v-if="
-              props.row.administrador !== sesion.sesion.uid &&
-              props.row.administrador
+              props.row.idAdministrador !== sesion.data.user.id &&
+              props.row.idAdministrador
             "
           >
             <q-breadcrumbs class="text-grey">
@@ -36,7 +36,7 @@
           </q-card-section>
           <q-card-actions align="right" v-else>
             <q-btn
-              :outline="props.row.enProceso"
+              :outline="!!props.row.enProceso"
               :color="props.row.enProceso ? 'negative' : 'primary'"
               :label="props.row.enProceso ? 'rechazar' : 'Aceptar'"
               v-show="
@@ -87,16 +87,9 @@
 
 <script>
 import { onMounted, reactive } from "@vue/runtime-core";
-import {
-  getDatabase,
-  ref as refdb,
-  onValue,
-  onChildChanged,
-  onChildAdded,
-  update,
-} from "firebase/database";
 import { useSesion } from "src/stores/sesion";
 import AdministradorComp from "components/AdministradorComp.vue";
+import { api } from "src/boot/axios";
 const columns = [
   { name: "coordinacion", label: "Coordinacion", field: "coordinacion" },
   { name: "problema", label: "Tipo de problema", field: "problema" },
@@ -112,60 +105,27 @@ export default {
     AdministradorComp,
   },
   setup() {
-    const db = getDatabase();
     const solicitudes = reactive([]);
     const sesion = useSesion();
-    const redb = refdb(db, "solicitudes/");
-    onMounted(() => {
-      onValue(
-        redb,
-        (snapshot) => {
-          snapshot.forEach((childSnapshot) => {
-            if (!childSnapshot.val().terminada) {
-              var solicitud = childSnapshot.val();
-              solicitud.key = childSnapshot.key;
-              solicitudes.push(solicitud);
-            }
-          });
-        },
-        {
-          onlyOnce: true,
-        }
-      );
-      onChildAdded(redb, (data) => {
-        const refSolicitudes = solicitudes;
-        const posicion = refSolicitudes.findIndex(
-          (soli) => soli.key === data.key
-        );
-        if (
-          posicion === -1 &&
-          !data.val().terminada &&
-          solicitudes.length !== 0
-        ) {
-          solicitudes.push(data.val());
-        }
-      });
-
-      onChildChanged(redb, (data) => {
-        const refSolicitudes = solicitudes;
-        const posicion = refSolicitudes.findIndex(
-          (soli) => soli.key === data.key
-        );
-        if (data.val().terminada) {
-          solicitudes.length;
-          solicitudes.splice(posicion, 1);
-        } else {
-          solicitudes[posicion] = data.val();
-        }
+    onMounted(async () => {
+      const response = await api.get("/solicitudes", sesion.authorizacion);
+      const solicitudesResponse = response.data.solicitudes;
+      solicitudesResponse.forEach((solicitud) => {
+        solicitudes.push(solicitud);
       });
     });
 
-    const cambiarProceso = (solicitud) => {
-      var redb = refdb(db, "solicitudes/" + solicitud.key);
-      if (solicitud.enProceso) solicitud.administrador = sesion.sesion.uid;
+    const cambiarProceso = async (solicitud) => {
+      if (solicitud.enProceso) solicitud.idAdministrador = sesion.data.user.id;
       if (!solicitud.terminada && !solicitud.enProceso)
-        solicitud.administrador = "";
-      update(redb, solicitud);
+        solicitud.idAdministrador = "";
+      console.log(solicitud);
+      const resultado = await api.patch(
+        `/solicitudes/${solicitud.id}`,
+        solicitud,
+        sesion.authorizacion
+      );
+      console.log(resultado);
     };
     return {
       sesion,

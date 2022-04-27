@@ -177,7 +177,6 @@ export default {
             password: contraseña.value,
             admi: tipoDeCuenta.value,
           };
-          console.log(usuario);
           try {
             await api.post("/register", usuario);
             $q.notify({

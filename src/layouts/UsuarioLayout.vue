@@ -27,13 +27,6 @@ export default {
     const router = useRouter();
     onBeforeMount(async () => {
       try {
-        const config = {
-          headers: {
-            Authorization: `Bearer ${sesion.data.token.access_token}`,
-          },
-        };
-        const user = await api.get("/info-user", config);
-        sesion.data.user = user.data;
       } catch (error) {
         console.log(error);
       }

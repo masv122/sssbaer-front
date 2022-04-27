@@ -2,6 +2,15 @@
   <q-layout view="lHh Lpr fff" class="bg-grey-1">
     <q-header elevated class="bg-white text-grey-8" height-hint="64">
       <q-toolbar class="GPL__toolbar" style="height: 64px">
+        <q-btn
+          flat
+          dense
+          round
+          @click="toggleLeftDrawer"
+          aria-label="Menu"
+          icon="menu"
+          class="q-mx-md"
+        />
         <q-icon name="flight_takeoff" size="3em" />
 
         <q-toolbar-title
@@ -67,6 +76,59 @@
         </div>
       </q-toolbar>
     </q-header>
+    <q-drawer
+      v-model="leftDrawerOpen"
+      bordered
+      behavior="mobile"
+      @click="leftDrawerOpen = false"
+    >
+      <q-scroll-area class="fit">
+        <q-toolbar class="GPL__toolbar">
+          <q-toolbar-title class="row items-center text-grey-8">
+            <img
+              class="q-pl-md"
+              src="https://pbs.twimg.com/media/B33SGbYIMAAhrVR.png"
+            />
+            <span class="q-ml-sm">Photos</span>
+          </q-toolbar-title>
+        </q-toolbar>
+
+        <q-list padding>
+          <q-item
+            clickable
+            class="GPL__drawer-item"
+            :to="{ name: 'solicitudes admi' }"
+          >
+            <q-item-section avatar>
+              <q-icon name="checklist" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>Solicitudes</q-item-label>
+            </q-item-section>
+          </q-item>
+
+          <q-separator class="q-my-md" />
+
+          <q-item clickable class="GPL__drawer-item">
+            <q-item-section avatar>
+              <q-icon name="link.icon" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>{{}}</q-item-label>
+            </q-item-section>
+          </q-item>
+
+          <q-item clickable class="GPL__drawer-item">
+            <q-item-section avatar>
+              <q-icon name="link.icon" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>{{}}</q-item-label>
+            </q-item-section>
+          </q-item>
+        </q-list>
+      </q-scroll-area>
+    </q-drawer>
     <q-page-container class="GPL__page-container">
       <router-view />
 
@@ -132,26 +194,13 @@
 import { computed, onBeforeMount, onMounted, ref } from "vue";
 import { useSesion } from "stores/sesion";
 import { useRouter } from "vue-router";
-import { getAuth, onAuthStateChanged, signOut } from "@firebase/auth";
-import {
-  getDatabase,
-  ref as refdb,
-  onValue,
-  query,
-  orderByChild,
-  equalTo,
-} from "firebase/database";
 export default {
   name: "AdministradorLayout",
   setup() {
-    const db = getDatabase();
-    const redb = refdb(db, "solicitudes/");
-
     const leftDrawerOpen = ref(false);
     const notificacionSolicitudNueva = ref(-1);
     const notificacionSolicitudesAdmi = ref(0);
     const search = ref("");
-    const auth = getAuth();
     const sesion = useSesion();
     const router = useRouter();
     function toggleLeftDrawer() {
@@ -161,29 +210,29 @@ export default {
       sesion.sesion ? sesion.sesion.displayName : ""
     );
     const authListener = () => {
-      onAuthStateChanged(auth, (user) => {
+      /*       onAuthStateChanged(auth, (user) => {
         if (user) {
           sesion.sesion = user;
           router.push({ name: "solicitudes admi" });
         } else {
           router.push({ name: "ingreso" });
         }
-      });
+      }); */
     };
     const cerrarSesion = async () => {
-      try {
+      /*       try {
         const auth = getAuth();
         await signOut(auth);
         router.push({ name: "ingreso" });
       } catch (error) {
         console.log(error);
-      }
+      } */
     };
     onBeforeMount(() => {
-      authListener();
+      /* authListener(); */
     });
     onMounted(() => {
-      onValue(redb, () => {
+      /*       onValue(redb, () => {
         notificacionSolicitudNueva.value++;
       });
       const redb2 = query(
@@ -193,7 +242,7 @@ export default {
       );
       onValue(redb2, () => {
         notificacionSolicitudesAdmi.value++;
-      });
+      }); */
     });
     return {
       nombreAdmi,

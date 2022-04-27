@@ -107,12 +107,11 @@ export default {
               idUsuario: sesion.data.user.id,
               administrador: "",
             };
-            const config = {
-              headers: {
-                Authorization: `Bearer ${sesion.data.token.access_token}`,
-              },
-            };
-            const response = await api.post("/solicitudes", solicitud, config);
+            const response = await api.post(
+              "/solicitudes",
+              solicitud,
+              sesion.authorizacion
+            );
             console.log(response);
             if (response.data.message === "ok")
               $q.notify({

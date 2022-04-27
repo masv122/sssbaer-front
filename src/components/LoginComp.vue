@@ -91,16 +91,14 @@ export default {
             message: "Complete los datos",
           });
         } else {
-          try {
-            const userCredential = await api.post("/login", {
-              email: correo.value,
-              password: contraseña.value,
-            });
-            if (userCredential.status === 200) {
-              sesion.data.token = userCredential.data;
+          const result = await sesion.login(correo.value, contraseña.value);
+          if (result) {
+            if (sesion.data.user.admi) {
+              router.push({ name: "administrador" });
+            } else {
               router.push({ name: "usuario" });
             }
-          } catch (error) {
+          } else {
             $q.notify({
               type: "warning",
               message: "Usuario/Contraseña invalidas",
