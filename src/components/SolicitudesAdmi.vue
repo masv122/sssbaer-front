@@ -1,12 +1,26 @@
 <template>
   <q-table
     title="Mis solicitudes"
-    :rows="solicitudes"
+    :rows="admiStore.solicitudes"
     :columns="columns"
     row-key="id"
     grid
     hide-header
   >
+    <template v-slot:top>
+      <q-icon name="view_list" color="primary" size="3em" />
+
+      <q-space />
+
+      <q-btn
+        class="glossy"
+        round
+        color="primary"
+        icon="refresh"
+        @click="admiStore.cargarSolicitudes()"
+      />
+    </template>
+
     <template v-slot:item="props">
       <div
         class="q-pa-xs col-xs-12 col-sm-6 col-md-4 col-lg-3 grid-style-transition"
@@ -15,8 +29,8 @@
         <q-card :class="props.selected ? 'bg-grey-2' : ''">
           <q-card-section
             v-if="
-              props.row.idAdministrador !== sesion.data.user.id &&
-              props.row.idAdministrador
+              !!props.row.idAdministrador &&
+              props.row.idAdministrador != sesion.data.user.id
             "
           >
             <q-breadcrumbs class="text-grey">
@@ -25,11 +39,11 @@
               </template>
               <q-breadcrumbs-el
                 icon="hourglass_empty"
-                :class="props.row.enProceso ? 'text-blue' : ''"
+                :class="!!props.row.enProceso ? 'text-blue' : ''"
               />
               <q-breadcrumbs-el
                 icon="check_circle"
-                :class="props.row.terminada ? 'text-green' : ''"
+                :class="!!props.row.terminado ? 'text-green' : ''"
               />
               s-el icon="verified" />
             </q-breadcrumbs>
@@ -37,29 +51,29 @@
           <q-card-actions align="right" v-else>
             <q-btn
               :outline="!!props.row.enProceso"
-              :color="props.row.enProceso ? 'negative' : 'primary'"
-              :label="props.row.enProceso ? 'rechazar' : 'Aceptar'"
+              :color="!!props.row.enProceso ? 'negative' : 'primary'"
+              :label="!!props.row.enProceso ? 'rechazar' : 'Aceptar'"
               v-show="
-                (!props.row.enProceso && !props.row.terminada) ||
-                (props.row.enProceso && !props.row.terminada)
+                (!!!props.row.enProceso && !!!props.row.terminado) ||
+                (props.row.enProceso && !!!props.row.terminado)
               "
               @click="
-                props.row.enProceso = !props.row.enProceso;
-                cambiarProceso(props.row);
+                props.row.enProceso = !!!props.row.enProceso;
+                admiStore.cambiarProceso(props.row);
               "
             />
             <q-btn
               color="green"
               label="Completar"
-              v-show="props.row.enProceso || props.row.terminada"
-              v-model="props.row.terminada"
+              v-show="!!props.row.enProceso || !!props.row.terminado"
+              v-model="props.row.terminado"
               checked-icon="check"
-              :disable="props.row.terminada"
+              :disable="!!props.row.terminado"
               unchecked-icon="clear"
               @click="
-                props.row.enProceso = !props.row.enProceso;
-                props.row.terminada = !props.row.terminada;
-                cambiarProceso(props.row);
+                props.row.enProceso = !!!props.row.enProceso;
+                props.row.terminado = !!!props.row.terminado;
+                admiStore.cambiarProceso(props.row);
               "
             />
           </q-card-actions>
@@ -76,8 +90,8 @@
           </q-list>
           <q-separator />
           <administrador-comp
-            :id="props.row.administrador"
-            v-show="props.row.enProceso"
+            :id="props.row.idAdministrador"
+            v-show="!!props.row.enProceso"
           />
         </q-card>
       </div>
@@ -90,6 +104,7 @@ import { onMounted, reactive } from "@vue/runtime-core";
 import { useSesion } from "src/stores/sesion";
 import AdministradorComp from "components/AdministradorComp.vue";
 import { api } from "src/boot/axios";
+import { useAdmiStore } from "src/stores/admiStore";
 const columns = [
   { name: "coordinacion", label: "Coordinacion", field: "coordinacion" },
   { name: "problema", label: "Tipo de problema", field: "problema" },
@@ -105,33 +120,15 @@ export default {
     AdministradorComp,
   },
   setup() {
-    const solicitudes = reactive([]);
     const sesion = useSesion();
+    const admiStore = useAdmiStore();
     onMounted(async () => {
-      const response = await api.get("/solicitudes", sesion.authorizacion);
-      const solicitudesResponse = response.data.solicitudes;
-      solicitudesResponse.forEach((solicitud) => {
-        solicitudes.push(solicitud);
-      });
+      await admiStore.cargarSolicitudes();
     });
-
-    const cambiarProceso = async (solicitud) => {
-      if (solicitud.enProceso) solicitud.idAdministrador = sesion.data.user.id;
-      if (!solicitud.terminada && !solicitud.enProceso)
-        solicitud.idAdministrador = "";
-      console.log(solicitud);
-      const resultado = await api.patch(
-        `/solicitudes/${solicitud.id}`,
-        solicitud,
-        sesion.authorizacion
-      );
-      console.log(resultado);
-    };
     return {
       sesion,
       columns,
-      cambiarProceso,
-      solicitudes,
+      admiStore,
     };
   },
 };

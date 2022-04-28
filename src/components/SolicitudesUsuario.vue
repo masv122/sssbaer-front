@@ -24,7 +24,7 @@
               />
               <q-breadcrumbs-el
                 icon="check_circle"
-                :class="props.row.terminada ? 'text-green' : ''"
+                :class="props.row.terminado ? 'text-green' : ''"
               />
               <q-breadcrumbs-el icon="verified" />
             </q-breadcrumbs>
@@ -43,7 +43,7 @@
           <q-separator />
           <administrador-comp
             :id="props.row.administrador"
-            v-show="props.row.enProceso || props.row.terminada"
+            v-show="props.row.enProceso || props.row.terminado"
           />
         </q-card>
       </div>

@@ -39,7 +39,7 @@ export const useSesion = defineStore("sesion", {
               Authorization: `Bearer ${this.data.token.access_token}`,
             },
           };
-          const user = await api.get("/info-user", config);
+          const user = await api.get("/user", config);
           if (user.data) this.data.user = user.data;
           return true;
         }
@@ -48,5 +48,6 @@ export const useSesion = defineStore("sesion", {
         return false;
       }
     },
+    async infoUser(id) {},
   },
 });

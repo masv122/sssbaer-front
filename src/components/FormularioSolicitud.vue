@@ -103,7 +103,7 @@ export default {
               problema: problema.value,
               comentarioAdicional: comentarioAdicional.value,
               enProceso: false,
-              terminada: false,
+              terminado: false,
               idUsuario: sesion.data.user.id,
               administrador: "",
             };
