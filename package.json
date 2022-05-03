@@ -2,7 +2,7 @@
   "name": "sssbaer-front",
   "version": "0.0.1",
   "description": "App web que permite enviar solicitudes de servicio",
-  "productName": "Sistema de Solicitud de Servicios de Baer",
+  "productName": "SSS Baer",
   "author": "Marcel <masv122@gmail.com>",
   "private": true,
   "scripts": {

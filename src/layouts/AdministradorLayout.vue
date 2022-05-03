@@ -239,13 +239,20 @@ export default {
       }); */
     };
     const cerrarSesion = async () => {
-      /*       try {
-        const auth = getAuth();
-        await signOut(auth);
-        router.push({ name: "ingreso" });
+      try {
+        const response = await sesion.logout();
+        if (response) {
+          router.push({ name: "ingreso" });
+        } else {
+          $q.notify({
+            color: "negative",
+            message:
+              "Error al cerrar la sesion, consulte la consola para mas informacion",
+          });
+        }
       } catch (error) {
         console.log(error);
-      } */
+      }
     };
     onBeforeMount(() => {
       /* authListener(); */

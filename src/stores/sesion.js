@@ -49,5 +49,28 @@ export const useSesion = defineStore("sesion", {
       }
     },
     async infoUser(id) {},
+    async logout() {
+      try {
+        const response = await api.get("/logout", this.authorizacion);
+        if (response.data.res) {
+          this.data = {
+            user: {
+              name: "",
+              email: "",
+              id: "",
+              admi: null,
+            },
+            token: {
+              access_token: "",
+              token_type: "",
+            },
+          };
+          return true;
+        } else return false;
+      } catch (error) {
+        console.log(error);
+        return false;
+      }
+    },
   },
 });

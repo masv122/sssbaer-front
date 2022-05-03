@@ -53,7 +53,6 @@
 
 <script>
 import { ref } from "vue";
-import { v4 as uuidv4 } from "uuid";
 import { useQuasar } from "quasar";
 import { useSesion } from "stores/sesion";
 import { api } from "src/boot/axios";
@@ -88,7 +87,6 @@ export default {
       refCoordinacion,
 
       async onSubmit() {
-        console.log(refProblema.value, refCoordinacion.value);
         refProblema.value.validate();
         refCoordinacion.value.validate();
         if (refProblema.value.hasError || refCoordinacion.value.hasError) {
@@ -112,7 +110,6 @@ export default {
               solicitud,
               sesion.authorizacion
             );
-            console.log(response);
             if (response.data.message === "ok")
               $q.notify({
                 color: "positive",

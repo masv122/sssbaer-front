@@ -21,17 +21,28 @@
 </template>
 
 <script>
+import { useSesion } from "src/stores/sesion";
 import { useRouter } from "vue-router";
+import { useQuasar } from "quasar";
 export default {
   name: "HeaderUsuario",
 
   setup() {
+    const $q = useQuasar();
     const router = useRouter();
+    const sesion = useSesion();
     const cerrarSesion = async () => {
       try {
-        const auth = getAuth();
-        await signOut(auth);
-        router.push({ name: "ingreso" });
+        const response = await sesion.logout();
+        if (response) {
+          router.push({ name: "ingreso" });
+        } else {
+          $q.notify({
+            color: "negative",
+            message:
+              "Error al cerrar la sesion, consulte la consola para mas informacion",
+          });
+        }
       } catch (error) {
         console.log(error);
       }

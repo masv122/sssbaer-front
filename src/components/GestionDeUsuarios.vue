@@ -46,6 +46,17 @@
                   modoEditar = true;
                 "
               />
+              <q-btn
+                flat
+                color="negative"
+                size="sm"
+                rounded
+                icon="cancel"
+                @click="
+                  cargarPerfil(props.row);
+                  modoEditar = true;
+                "
+              />
             </q-card-actions>
             <q-separator />
             <q-list dense>
@@ -97,72 +108,72 @@
                 'Porfavor ingrese el nombre y apellido',
             ]"
           />
-          <q-list bordered separator>
-            <q-slide-item top-color="transparent">
-              <template v-slot:top>
-                <q-input
-                  v-model="contraseña"
-                  filled
-                  lazy-rules
-                  ref="refContraseña"
-                  label="Contraseña *"
-                  :type="esVisible ? 'password' : 'text'"
-                  hint="Ingrese la contraseña"
-                  :rules="[
-                    (val) =>
-                      (val && val.length > 0) ||
-                      'Porfavor ingrese una contraseña',
-                  ]"
-                >
-                  <template v-slot:append>
-                    <q-icon
-                      :name="esVisible ? 'visibility_off' : 'visibility'"
-                      class="cursor-pointer"
-                      @click="esVisible = !esVisible"
-                    />
-                  </template>
-                </q-input>
+          <q-slide-item
+            @left="onLeft"
+            @right="onRight"
+            v-if="!cambiarContraseña"
+          >
+            <template v-slot:left>
+              <q-icon name="done" />
+            </template>
 
-                <q-input
-                  v-model="reContraseña"
-                  filled
-                  ref="refReContraseña"
-                  :error="!validarContraseña"
-                  lazy-rules
-                  label="Repita la Contraseña *"
-                  :type="esVisible ? 'password' : 'text'"
-                  hint="Debe coincidir con la contraseña"
-                  :rules="[
-                    (val) =>
-                      (val && val.length > 0) ||
-                      'Porfavor repita la contraseña',
-                  ]"
-                >
-                  <template v-slot:append>
-                    <q-icon
-                      :name="esVisible ? 'visibility_off' : 'visibility'"
-                      class="cursor-pointer"
-                      @click="esVisible = !esVisible"
-                    />
-                  </template>
-                </q-input>
+            <q-item>
+              <q-item-section avatar>
+                <q-avatar color="primary" text-color="white" icon="password" />
+              </q-item-section>
+              <q-item-section
+                >Desliza para cambiar la contraseña</q-item-section
+              >
+            </q-item>
+          </q-slide-item>
+
+          <div v-else>
+            <q-input
+              v-model="contraseña"
+              filled
+              lazy-rules
+              ref="refContraseña"
+              label="Contraseña *"
+              :type="esVisible ? 'password' : 'text'"
+              hint="Ingrese la contraseña"
+              :rules="[
+                (val) =>
+                  (val && val.length > 0) || 'Porfavor ingrese una contraseña',
+              ]"
+              class="q-mb-md"
+            >
+              <template v-slot:append>
+                <q-icon
+                  :name="esVisible ? 'visibility_off' : 'visibility'"
+                  class="cursor-pointer"
+                  @click="esVisible = !esVisible"
+                />
               </template>
+            </q-input>
 
-              <q-item style="height: 150px">
-                <q-item-section avatar>
-                  <q-avatar
-                    color="primary"
-                    text-color="white"
-                    icon="password"
-                  />
-                </q-item-section>
-                <q-item-section
-                  >Desliza hacia abajo para cambiar la
-                  contraseña</q-item-section
-                >
-              </q-item>
-            </q-slide-item>
-          </q-list>
+            <q-input
+              v-model="reContraseña"
+              filled
+              ref="refReContraseña"
+              :error="!validarContraseña"
+              lazy-rules
+              label="Repita la Contraseña *"
+              :type="esVisible ? 'password' : 'text'"
+              hint="Debe coincidir con la contraseña"
+              :rules="[
+                (val) =>
+                  (val && val.length > 0) || 'Porfavor repita la contraseña',
+              ]"
+            >
+              <template v-slot:append>
+                <q-icon
+                  :name="esVisible ? 'visibility_off' : 'visibility'"
+                  class="cursor-pointer"
+                  @click="esVisible = !esVisible"
+                />
+              </template>
+            </q-input>
+          </div>
           <div>
             <q-btn label="guardar" type="submit" color="positive" icon="save" />
             <q-btn
@@ -182,18 +193,29 @@
 
 <script>
 import { onMounted, reactive, ref, computed } from "vue";
-import { getDatabase, ref as refdb, onValue } from "@firebase/database";
-import { getAuth } from "@firebase/auth";
+import { useSesion } from "src/stores/sesion";
+import { api } from "src/boot/axios";
+import { useQuasar } from "quasar";
 
 const columns = [
-  { name: "correo", label: "correo", field: "correo" },
-  { name: "nombre", label: "nombre", field: "nombre" },
+  { name: "email", label: "correo", field: "email" },
+  { name: "name", label: "nombre", field: "name" },
+  {
+    name: "admi",
+    label: "Tipo",
+    field: (row) => (Boolean(row.admi) ? "Administrador" : "Usuario"),
+  },
 ];
 
 export default {
   name: "GestionDeUsuarios",
   setup() {
+    const cambiarContraseña = ref(false);
+    const $q = useQuasar();
+    const sesion = useSesion();
     const usuarios = reactive([]);
+    const id = ref(null);
+    const modoEditar = ref(false);
     const nombre = ref(null);
     const contraseña = ref(null);
     const reContraseña = ref(null);
@@ -210,43 +232,50 @@ export default {
     );
     const refCorreo = ref(null);
     const tipo = ref(0);
-    const db = getDatabase();
 
     onMounted(() => {
       cargarData();
     });
 
-    const cargarData = () => {
-      usuarios.splice(0, usuarios.length);
-      const redb = refdb(
-        db,
-        `usuarios/${tipo.value === 0 ? "trabajadores" : "admis"}`
-      );
-      const data = [];
-      onValue(
-        redb,
-        (snapshot) => {
-          snapshot.forEach((childSnapshot) => {
-            var usuario = childSnapshot.val();
-            usuario.uid = childSnapshot.key;
-            usuarios.push(usuario);
+    const cargarData = async () => {
+      try {
+        const response = await api.get("/users", sesion.authorizacion);
+        if (response.data.users)
+          response.data.users.forEach((u) => {
+            usuarios.push(u);
           });
-        },
-        {
-          onlyOnce: true,
-        }
-      );
+      } catch (error) {
+        console.log(error);
+        $q.notify({
+          color: "negative",
+          message:
+            "Error al cargar los usuarios, consulte la consola para mas informacion",
+        });
+      }
     };
+    const onLeft = () => {
+      cambiarContraseña.value = !cambiarContraseña.value;
+    };
+    const resetForm = function () {
+      nombre.value = "";
+      contraseña.value = "";
+      reContraseña.value = "";
+      correo.value = "";
+      esVisible.value = true;
+      tipoDeCuenta.value = false;
+      modoEditar.value = false;
+    };
+    const onRight = () => {};
     const cargarPerfil = (perfil) => {
-      const auth = getAuth();
-      const user = auth.currentUser;
-      console.log(user);
-      nombre.value = perfil.nombre;
-      correo.value = perfil.correo;
+      nombre.value = perfil.name;
+      correo.value = perfil.email;
+      id.value = perfil.id;
+      cambiarContraseña.value = false;
     };
     return {
       columns,
       tipo,
+      id,
       nombre,
       contraseña,
       reContraseña,
@@ -263,7 +292,49 @@ export default {
       usuarios,
       cargarData,
       cargarPerfil,
-      modoEditar: ref(false),
+      onLeft,
+      resetForm,
+      onReset() {
+        resetForm();
+      },
+      async onSubmit() {
+        refNombre.value.validate();
+        refCorreo.value.validate();
+        if (refNombre.value.hasError || refCorreo.value.hasError) {
+          $q.notify({
+            color: "negative",
+            message: "Datos incorrectos",
+          });
+        } else {
+          const usuario = {
+            name: nombre.value,
+            email: correo.value,
+            id: id.value,
+          };
+          try {
+            await api.put(
+              `/users/${usuario.id}`,
+              usuario,
+              sesion.authorizacion
+            );
+            $q.notify({
+              color: "positive",
+              message: "Usuario Actualizado",
+            });
+            resetForm();
+          } catch (error) {
+            console.log(error);
+            $q.notify({
+              color: "negative",
+              message:
+                "Error al actualizar el usuario, mire la consola para mas informacion",
+            });
+          }
+        }
+      },
+      onRight,
+      cambiarContraseña,
+      modoEditar,
     };
   },
 };

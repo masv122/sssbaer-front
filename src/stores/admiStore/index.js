@@ -36,7 +36,7 @@ export const useAdmiStore = defineStore("admiStore", {
 
     async getAdmi(id) {
       try {
-        return api.get(`/user/${id}`, sesion.authorizacion);
+        return api.get(`/users/${id}`, sesion.authorizacion);
       } catch (error) {
         console.log(error);
         return "error al localizar el administrador";
