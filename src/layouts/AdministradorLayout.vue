@@ -1,212 +1,13 @@
 <template>
   <q-layout view="lHh Lpr fff" class="bg-grey-1">
-    <q-header elevated class="bg-white text-grey-8" height-hint="64">
-      <q-toolbar class="GPL__toolbar" style="height: 64px">
-        <q-btn
-          flat
-          dense
-          round
-          @click="toggleLeftDrawer"
-          aria-label="Menu"
-          icon="menu"
-          class="q-mx-md"
-        />
-        <q-icon name="flight_takeoff" size="3em" />
-
-        <q-toolbar-title
-          v-if="$q.screen.gt.sm"
-          shrink
-          class="row items-center no-wrap"
-        >
-          <span class="q-ml-sm">Sistema de solicitud de ayuda del BAER</span>
-        </q-toolbar-title>
-
-        <q-space />
-
-        <q-input
-          class="GPL__toolbar-input"
-          dense
-          standout="bg-negative"
-          v-model="search"
-          placeholder="Busqueda"
-        >
-          <template v-slot:prepend>
-            <q-icon v-if="search === ''" name="search" />
-            <q-icon
-              v-else
-              name="clear"
-              class="cursor-pointer"
-              @click="search = ''"
-            />
-          </template>
-        </q-input>
-
-        <q-space />
-
-        <div class="q-gutter-sm row items-center no-wrap">
-          <q-btn round dense flat color="grey-8" icon="person">
-            <q-tooltip>{{ user.name }}</q-tooltip>
-          </q-btn>
-          <q-btn
-            round
-            dense
-            @click="notificacionSolicitudNueva = 0"
-            flat
-            color="grey-8"
-            icon="notifications"
-          >
-            <q-badge
-              v-show="notificacionSolicitudNueva > 0"
-              color="red"
-              text-color="white"
-              floating
-            >
-              {{ notificacionSolicitudNueva }}
-            </q-badge>
-            <q-tooltip>{{
-              notificacionSolicitudNueva > 0
-                ? "Borrar notificaciones"
-                : "Notificaciones"
-            }}</q-tooltip>
-          </q-btn>
-          <q-btn round dense flat color="grey-8" @click="cerrarSesion()">
-            <q-icon name="logout" />
-            <q-tooltip>Salir</q-tooltip>
-          </q-btn>
-        </div>
-      </q-toolbar>
-    </q-header>
-    <q-drawer
-      v-model="leftDrawerOpen"
-      bordered
-      behavior="mobile"
-      @click="leftDrawerOpen = false"
-    >
-      <q-scroll-area class="fit">
-        <q-toolbar class="GPL__toolbar">
-          <q-toolbar-title class="row items-center text-grey-8">
-            <span class="q-ml-sm">Menu</span>
-          </q-toolbar-title>
-        </q-toolbar>
-        <q-list padding>
-          <q-separator class="q-my-md" />
-
-          <q-item
-            clickable
-            class="GPL__drawer-item"
-            :to="{ name: 'solicitudes admi' }"
-          >
-            <q-item-section avatar>
-              <q-icon name="view_list" />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>Solicitudes</q-item-label>
-            </q-item-section>
-          </q-item>
-
-          <q-separator class="q-my-md" />
-
-          <q-item
-            clickable
-            class="GPL__drawer-item"
-            :to="{ name: 'solicitudes realizadas admi' }"
-          >
-            <q-item-section avatar>
-              <q-icon name="checklist" />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>Atendidas por mi</q-item-label>
-            </q-item-section>
-          </q-item>
-
-          <q-separator class="q-my-md" />
-
-          <q-item
-            clickable
-            class="GPL__drawer-item"
-            :to="{ name: 'gestion de cuentas' }"
-          >
-            <q-item-section avatar>
-              <q-icon name="manage_accounts" />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>Gestion de cuentas</q-item-label>
-            </q-item-section>
-          </q-item>
-          <q-separator class="q-my-md" />
-
-          <q-item disable class="GPL__drawer-item">
-            <q-item-section>{{ user.name }}</q-item-section>
-            <q-item-section avatar>
-              <q-icon color="primary" name="person" />
-            </q-item-section>
-          </q-item>
-          <q-item disable class="GPL__drawer-item">
-            <q-item-label>Correo: {{ user.email }}</q-item-label>
-          </q-item>
-          <q-item disable class="GPL__drawer-item">
-            <q-item-label>ID: {{ user.id }}</q-item-label>
-          </q-item>
-        </q-list>
-      </q-scroll-area>
-    </q-drawer>
+    <header-admi
+      @changeDrawer="drawer = !drawer"
+      :nombre="sesion.data.user.name"
+    />
+    <menu-admi :drawer="drawer" @changeDrawer="drawer = !drawer" />
     <q-page-container class="GPL__page-container">
       <router-view />
-
-      <q-page-sticky v-if="$q.screen.gt.sm" expand position="left">
-        <div class="fit q-pt-xl q-px-sm column">
-          <q-btn
-            round
-            flat
-            color="grey-8"
-            stack
-            no-caps
-            size="26px"
-            class="GPL__side-btn"
-            :to="{ name: 'solicitudes admi' }"
-          >
-            <q-icon size="22px" name="view_list" />
-            <div class="GPL__side-btn__label">Solicitudes</div>
-          </q-btn>
-
-          <q-btn
-            round
-            flat
-            color="grey-8"
-            stack
-            no-caps
-            size="26px"
-            class="GPL__side-btn"
-            :to="{ name: 'solicitudes realizadas admi' }"
-          >
-            <q-icon size="22px" name="checklist" />
-            <div class="GPL__side-btn__label">Atendidas por mi</div>
-            <q-badge
-              floating
-              color="red"
-              text-color="white"
-              style="top: 8px; right: 16px"
-              @click="notificacionSolicitudesAdmi = 0"
-            >
-              {{ notificacionSolicitudesAdmi }}
-            </q-badge>
-          </q-btn>
-
-          <q-btn
-            round
-            flat
-            color="grey-8"
-            stack
-            no-caps
-            size="26px"
-            class="GPL__side-btn"
-            :to="{ name: 'gestion de cuentas' }"
-          >
-            <q-icon size="22px" name="manage_accounts" />
-            <div class="GPL__side-btn__label">Gestion de cuentas</div>
-          </q-btn>
-        </div>
-      </q-page-sticky>
+      <menu-sticky-admi />
     </q-page-container>
   </q-layout>
 </template>
@@ -215,67 +16,26 @@
 import { computed, onBeforeMount, onMounted, ref } from "vue";
 import { useSesion } from "stores/sesion";
 import { useRouter } from "vue-router";
+import HeaderAdmi from "src/components/HeaderAdmi.vue";
+import MenuAdmi from "src/components/MenuAdmi.vue";
+import MenuStickyAdmi from "src/components/MenuStickyAdmi.vue";
 export default {
+  components: { MenuStickyAdmi, HeaderAdmi, MenuAdmi },
   name: "AdministradorLayout",
   setup() {
-    const leftDrawerOpen = ref(false);
-    const notificacionSolicitudNueva = ref(-1);
+    const drawer = ref(false);
     const notificacionSolicitudesAdmi = ref(0);
     const search = ref("");
     const sesion = useSesion();
     const router = useRouter();
     function toggleLeftDrawer() {
-      leftDrawerOpen.value = !leftDrawerOpen.value;
+      drawer.value = !drawer.value;
     }
-    const user = computed(() => (sesion.data.user ? sesion.data.user : ""));
-    const authListener = () => {
-      /*       onAuthStateChanged(auth, (user) => {
-        if (user) {
-          sesion.sesion = user;
-          router.push({ name: "solicitudes admi" });
-        } else {
-          router.push({ name: "ingreso" });
-        }
-      }); */
-    };
-    const cerrarSesion = async () => {
-      try {
-        const response = await sesion.logout();
-        if (response) {
-          router.push({ name: "ingreso" });
-        } else {
-          $q.notify({
-            color: "negative",
-            message:
-              "Error al cerrar la sesion, consulte la consola para mas informacion",
-          });
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    onBeforeMount(() => {
-      /* authListener(); */
-    });
-    onMounted(() => {
-      /*       onValue(redb, () => {
-        notificacionSolicitudNueva.value++;
-      });
-      const redb2 = query(
-        redb,
-        orderByChild("administrador"),
-        equalTo(sesion.sesion.uid)
-      );
-      onValue(redb2, () => {
-        notificacionSolicitudesAdmi.value++;
-      }); */
-    });
+
     return {
-      user,
-      leftDrawerOpen,
-      cerrarSesion,
+      drawer,
       search,
-      notificacionSolicitudNueva,
+      sesion,
       notificacionSolicitudesAdmi,
       toggleLeftDrawer,
     };

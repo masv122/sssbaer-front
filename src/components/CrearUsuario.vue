@@ -1,106 +1,110 @@
 <template>
-  <div class="q-pa-md shadow-1 bg-white" style="width: 600px">
-    <q-form
-      @submit.prevent.stop="onSubmit"
-      @reset.prevent.stop="onReset"
-      class="q-gutter-md"
-    >
-      <div class="text-h5">Complete los datos</div>
-      <q-separator inset />
-
-      <q-input
-        v-model="correo"
-        label="Correo"
-        ref="refCorreo"
-        filled
-        lazy-rules
-        type="email"
-        :rules="[
-          (val) => (val && val.length > 0) || 'Porfavor ingrese el correo',
-        ]"
-        hint="Email"
-      />
-      <q-input
-        filled
-        v-model="nombre"
-        ref="refNombre"
-        label="Nombre completo *"
-        hint="Nombre y apellido"
-        lazy-rules
-        :rules="[
-          (val) =>
-            (val && val.length > 0) || 'Porfavor ingrese el nombre y apellido',
-        ]"
-      />
-      <q-input
-        v-model="contraseña"
-        filled
-        lazy-rules
-        ref="refContraseña"
-        label="Contraseña *"
-        :type="esVisible ? 'password' : 'text'"
-        hint="Ingrese la contraseña"
-        :rules="[
-          (val) => (val && val.length > 0) || 'Porfavor ingrese una contraseña',
-        ]"
+  <div class="flex flex-center">
+    <div class="q-pa-md shadow-1 bg-white" style="width: 600px">
+      <q-form
+        @submit.prevent.stop="onSubmit"
+        @reset.prevent.stop="onReset"
+        class="q-gutter-md"
       >
-        <template v-slot:append>
-          <q-icon
-            :name="esVisible ? 'visibility_off' : 'visibility'"
-            class="cursor-pointer"
-            @click="esVisible = !esVisible"
-          />
-        </template>
-      </q-input>
+        <div class="text-h5">Complete los datos</div>
+        <q-separator inset />
 
-      <q-input
-        v-model="reContraseña"
-        filled
-        ref="refReContraseña"
-        :error="!validarContraseña"
-        lazy-rules
-        label="Repita la Contraseña *"
-        :type="esVisible ? 'password' : 'text'"
-        hint="Debe coincidir con la contraseña"
-        :rules="[
-          (val) => (val && val.length > 0) || 'Porfavor repita la contraseña',
-        ]"
-      >
-        <template v-slot:append>
-          <q-icon
-            :name="esVisible ? 'visibility_off' : 'visibility'"
-            class="cursor-pointer"
-            @click="esVisible = !esVisible"
-          />
-        </template>
-      </q-input>
-      <div class="q-pa-md">
-        <div class="q-gutter-sm">
-          <q-radio
-            ref="refTipoDeCuenta"
-            v-model="tipoDeCuenta"
-            :val="false"
-            label="Usuario"
-          />
-          <q-radio
-            ref="refTipoDeCuenta"
-            v-model="tipoDeCuenta"
-            :val="true"
-            label="Administrador"
+        <q-input
+          v-model="correo"
+          label="Correo"
+          ref="refCorreo"
+          filled
+          lazy-rules
+          type="email"
+          :rules="[
+            (val) => (val && val.length > 0) || 'Porfavor ingrese el correo',
+          ]"
+          hint="Email"
+        />
+        <q-input
+          filled
+          v-model="nombre"
+          ref="refNombre"
+          label="Nombre completo *"
+          hint="Nombre y apellido"
+          lazy-rules
+          :rules="[
+            (val) =>
+              (val && val.length > 0) ||
+              'Porfavor ingrese el nombre y apellido',
+          ]"
+        />
+        <q-input
+          v-model="contraseña"
+          filled
+          lazy-rules
+          ref="refContraseña"
+          label="Contraseña *"
+          :type="esVisible ? 'password' : 'text'"
+          hint="Ingrese la contraseña"
+          :rules="[
+            (val) =>
+              (val && val.length > 0) || 'Porfavor ingrese una contraseña',
+          ]"
+        >
+          <template v-slot:append>
+            <q-icon
+              :name="esVisible ? 'visibility_off' : 'visibility'"
+              class="cursor-pointer"
+              @click="esVisible = !esVisible"
+            />
+          </template>
+        </q-input>
+
+        <q-input
+          v-model="reContraseña"
+          filled
+          ref="refReContraseña"
+          :error="!validarContraseña"
+          lazy-rules
+          label="Repita la Contraseña *"
+          :type="esVisible ? 'password' : 'text'"
+          hint="Debe coincidir con la contraseña"
+          :rules="[
+            (val) => (val && val.length > 0) || 'Porfavor repita la contraseña',
+          ]"
+        >
+          <template v-slot:append>
+            <q-icon
+              :name="esVisible ? 'visibility_off' : 'visibility'"
+              class="cursor-pointer"
+              @click="esVisible = !esVisible"
+            />
+          </template>
+        </q-input>
+        <div class="q-pa-md">
+          <div class="q-gutter-sm">
+            <q-radio
+              ref="refTipoDeCuenta"
+              v-model="tipoDeCuenta"
+              :val="false"
+              label="Usuario"
+            />
+            <q-radio
+              ref="refTipoDeCuenta"
+              v-model="tipoDeCuenta"
+              :val="true"
+              label="Administrador"
+            />
+          </div>
+        </div>
+        <div>
+          <q-btn label="Enviar" type="submit" color="primary" />
+          <q-btn
+            label="Restablecer"
+            type="reset"
+            color="negative"
+            flat
+            class="q-ml-sm"
           />
         </div>
-      </div>
-      <div>
-        <q-btn label="Enviar" type="submit" color="primary" />
-        <q-btn
-          label="Restablecer"
-          type="reset"
-          color="negative"
-          flat
-          class="q-ml-sm"
-        />
-      </div>
-    </q-form>
+      </q-form>
+    </div>
   </div>
 </template>
 

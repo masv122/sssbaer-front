@@ -8,8 +8,8 @@
           : "SSSB"
       }}</q-toolbar-title>
       <q-btn
-        v-show="$q.screen.width < 500"
-        @click="drawer = !drawer"
+        v-show="$q.screen.width < 1000"
+        @click="$emit('changeDrawer')"
         flat
         round
         dense

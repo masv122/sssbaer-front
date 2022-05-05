@@ -1,14 +1,14 @@
 <template>
   <q-page padding>
-    <q-btn
+    <!--     <q-btn
       color="white"
       text-color="black"
       :label="registro ? 'Ingresa' : 'registrate'"
       class="full-width q-mb-md"
       @click="registro = !registro"
-    />
-    <LoginComp v-if="!registro" />
-    <CrearUsuario v-else />
+    /> -->
+    <login-comp v-if="!registro" />
+    <crear-usuario v-else />
   </q-page>
 </template>
 

@@ -1,7 +1,7 @@
 <template>
   <q-layout view="hHh Lpr fFf" class="bg-negative">
     <q-header elevated class="bg-white text-negative">
-      <IngresoHeader />
+      <ingreso-header />
     </q-header>
     <div class="column justify-end">
       <div class="col self-center q-mt-lg">

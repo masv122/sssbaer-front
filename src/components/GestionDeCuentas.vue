@@ -13,9 +13,7 @@
       exact
     />
   </q-tabs>
-  <div class="flex flex-center">
-    <router-view />
-  </div>
+  <router-view />
 </template>
 
 <script>

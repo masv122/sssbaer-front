@@ -1,5 +1,5 @@
 <template>
-  <q-drawer v-model="drawer" show-if-above :width="300" :breakpoint="400">
+  <q-drawer v-model="drawerModel" show-if-above :width="300" :breakpoint="1000">
     <q-scroll-area
       style="
         height: calc(100% - 150px);
@@ -45,18 +45,34 @@
 
 <script>
 import { useSesion } from "stores/sesion";
-import { watch } from "@vue/runtime-core";
+import { computed, watch } from "@vue/runtime-core";
 export default {
   name: "MenuUsuario",
-  setup() {
+  emits: ["changeDrawer"],
+  props: {
+    drawer: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  setup(props, ctx) {
     const sesion = useSesion();
     const usuario = sesion.data.user;
+    const drawerModel = computed({
+      get() {
+        return props.drawer;
+      },
+      set(value) {
+        ctx.emit("changeDrawer");
+      },
+    });
     watch(sesion, (newSesion) => {
       usuario.email = newSesion.data.user.email;
       usuario.name = newSesion.data.user.name;
     });
     return {
       usuario,
+      drawerModel,
     };
   },
 };
