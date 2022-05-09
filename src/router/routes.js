@@ -2,6 +2,7 @@ const routes = [
   {
     path: "",
     component: () => import("layouts/MainLayout"),
+    redirect: { name: "ingreso" },
     children: [
       {
         path: "/",

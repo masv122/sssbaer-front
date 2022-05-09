@@ -1,5 +1,7 @@
 <template>
   <q-header elevated class="bg-white text-grey-8" height-hint="64">
+    <img src="~assets/banner_oficial.png" class="banner" />
+
     <q-toolbar class="GPL__toolbar" style="height: 64px">
       <q-btn
         flat

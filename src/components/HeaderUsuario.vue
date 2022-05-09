@@ -1,5 +1,7 @@
 <template>
   <q-header elevated class="bg-cyan-8">
+    <img src="~assets/banner_oficial.png" class="banner" />
+
     <q-toolbar class="bg-negative">
       <q-icon name="flight_takeoff" size="3em" />
       <q-toolbar-title>{{

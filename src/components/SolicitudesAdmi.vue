@@ -103,8 +103,8 @@
 import { onMounted, reactive } from "@vue/runtime-core";
 import { useSesion } from "src/stores/sesion";
 import AdministradorComp from "components/AdministradorComp.vue";
-import { api } from "src/boot/axios";
 import { useAdmiStore } from "src/stores/admiStore";
+import { apiEvents } from "src/boot/pusher";
 const columns = [
   { name: "coordinacion", label: "Coordinacion", field: "coordinacion" },
   { name: "problema", label: "Tipo de problema", field: "problema" },
@@ -112,6 +112,11 @@ const columns = [
     name: "comentarioAdicional",
     label: "Informacion adicional",
     field: "comentarioAdicional",
+  },
+  {
+    name: "name",
+    label: "Nombre",
+    field: "name",
   },
 ];
 
@@ -124,6 +129,21 @@ export default {
     const admiStore = useAdmiStore();
     onMounted(async () => {
       await admiStore.cargarSolicitudes();
+      apiEvents.Echo.channel("SolicitudEnviada").listen(
+        "SolicitudEnviada",
+        (e) => {
+          admiStore.solicitudes.push(e.solicitud);
+        }
+      );
+      apiEvents.Echo.channel("EstadoActualizado").listen(
+        "EstadoActualizado",
+        (e) => {
+          const index = admiStore.solicitudes.findIndex(
+            (s) => s.id == e.solicitud.id
+          );
+          admiStore.solicitudes[index] = e.solicitud;
+        }
+      );
     });
     return {
       sesion,

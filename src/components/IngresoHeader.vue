@@ -1,6 +1,6 @@
 <template>
   <div class="cont">
-    <q-img src="~assets/banner-cabecera-quienesomos.png" class="banner" />
+    <img src="~assets/banner_oficial.png" class="banner" />
   </div>
 
   <q-toolbar>
@@ -22,4 +22,9 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.banner {
+  height: 50px !important;
+  width: 100% !important;
+}
+</style>

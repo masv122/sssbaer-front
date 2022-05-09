@@ -39,6 +39,13 @@
             </template>
           </q-input>
 
+          <q-checkbox
+            v-model="recordar"
+            label="Recordar sesion"
+            checked-icon="task_alt"
+            unchecked-icon="highlight_off"
+          />
+
           <div>
             <q-btn
               label="Ingresar"
@@ -78,12 +85,14 @@ export default {
     const esVisible = ref(true);
     const sesion = useSesion();
     const router = useRouter();
+    const recordar = ref(false);
     return {
       correo,
       refcorreo,
       contraseña,
       refContraseña,
       esVisible,
+      recordar,
       async onSubmit() {
         if (refcorreo.value.hasError || refContraseña.value.hasError) {
           $q.notify({
@@ -93,17 +102,15 @@ export default {
         } else {
           const result = await sesion.login(correo.value, contraseña.value);
           if (result) {
-            if (sesion.data.user.admi) {
-              router.push({ name: "administrador" });
-            } else {
-              router.push({ name: "usuario" });
-            }
-          } else {
+            if (recordar.value) $q.cookies.set("token", sesion.data.token);
+            else $q.cookies.remove("token");
+            if (sesion.data.user.admi) router.push({ name: "administrador" });
+            else router.push({ name: "usuario" });
+          } else
             $q.notify({
               type: "warning",
               message: "Usuario/Contraseña invalidas",
             });
-          }
         }
       },
     };

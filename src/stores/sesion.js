@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { Cookies } from "quasar";
 import { api } from "src/boot/axios";
 
 export const useSesion = defineStore("sesion", {
@@ -34,24 +35,43 @@ export const useSesion = defineStore("sesion", {
         });
         if (userCredential.status === 200) {
           this.data.token = userCredential.data;
-          const config = {
-            headers: {
-              Authorization: `Bearer ${this.data.token.access_token}`,
-            },
-          };
-          const user = await api.get("/user", config);
-          if (user.data) this.data.user = user.data;
-          return true;
+          const setData = this.setUser();
+          return setData || false;
         }
       } catch (error) {
         console.log(error);
         return false;
       }
     },
-    async infoUser(id) {},
+    async setUser() {
+      try {
+        const user = await api.get("/user", this.authorizacion);
+        if (user.data) this.data.user = user.data;
+        return true;
+      } catch (error) {
+        console.log(error);
+        return false;
+      }
+    },
+
+    async isAuth() {
+      if (this.data.token.access_token) {
+        try {
+          const result = await api.get("/user", this.authorizacion);
+          return result.data.message === "Unauthenticated." ? false : true;
+        } catch (error) {
+          console.log(error);
+          return false;
+        }
+      } else {
+        return false;
+      }
+    },
+
     async logout() {
       try {
         const response = await api.get("/logout", this.authorizacion);
+        Cookies.remove("token");
         if (response.data.res) {
           this.data = {
             user: {
