@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { Cookies } from "quasar";
 import { api } from "src/boot/axios";
+import { apiEvents } from "src/boot/pusher";
 
 export const useSesion = defineStore("sesion", {
   state: () => ({
@@ -21,6 +22,7 @@ export const useSesion = defineStore("sesion", {
     authorizacion(state) {
       return {
         headers: {
+          Accept: "application/json",
           Authorization: `Bearer ${state.data.token.access_token}`,
         },
       };
@@ -46,6 +48,7 @@ export const useSesion = defineStore("sesion", {
     async setUser() {
       try {
         const user = await api.get("/user", this.authorizacion);
+        apiEvents.setConfig(this.authorizacion);
         if (user.data) this.data.user = user.data;
         return true;
       } catch (error) {

@@ -12,20 +12,31 @@ export default boot(async ({ app, store, router }) => {
       sesion.data.token = token;
       const result = await sesion.setUser();
       if (!result) {
-        router.push({ name: "ingreso" });
+        router.push({
+          name: "ingreso",
+        });
       }
     } catch (error) {
       console.log(error);
     }
-  } else router.push({ name: "ingreso" });
+  } else
+    router.push({
+      name: "ingreso",
+    });
+
   router.beforeEach(async (to, from, next) => {
     try {
       const isAuthenticated = await sesion.isAuth();
-      if (to.name !== "ingreso" && !isAuthenticated) next({ name: "ingreso" });
+      if (to.name !== "ingreso" && !isAuthenticated)
+        next({
+          name: "ingreso",
+        });
       else next();
     } catch (error) {
       console.log(error);
-      next({ name: "ingreso" });
+      next({
+        name: "ingreso",
+      });
     }
   });
 });

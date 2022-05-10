@@ -11,13 +11,18 @@ apiEvents.Pusher = require("pusher-js");
 export default boot(async (/* { app, router, ... } */) => {
   // something to do
 });
-apiEvents.Echo = new Echo({
-  broadcaster: "pusher",
-  key: "ASDASD2121",
-  wsHost: window.location.hostname,
-  wsPort: 6001,
-  disableStats: true,
-  forceTLS: false,
-});
+
+apiEvents.setConfig = (authorizacion) => {
+  apiEvents.Echo = new Echo({
+    broadcaster: "pusher",
+    key: "ASDASD2121",
+    wsHost: window.location.hostname,
+    wsPort: 6001,
+    disableStats: true,
+    forceTLS: false,
+    auth: authorizacion,
+    authEndpoint: "http://localhost:8000/api/broadcasting/auth",
+  });
+};
 
 export { apiEvents };
