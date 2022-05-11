@@ -105,7 +105,9 @@ import { useSesion } from "src/stores/sesion";
 import AdministradorComp from "components/AdministradorComp.vue";
 import { useAdmiStore } from "src/stores/admiStore";
 import { apiEvents } from "src/boot/pusher";
+import { useQuasar } from "quasar";
 const columns = [
+  { name: "id", label: "ID", field: "id" },
   { name: "coordinacion", label: "Coordinacion", field: "coordinacion" },
   { name: "problema", label: "Tipo de problema", field: "problema" },
   {
@@ -126,6 +128,7 @@ export default {
   },
   setup() {
     const sesion = useSesion();
+    const $q = useQuasar();
     const admiStore = useAdmiStore();
     onMounted(async () => {
       await admiStore.cargarSolicitudes();
@@ -133,6 +136,13 @@ export default {
         "SolicitudEnviada",
         (e) => {
           admiStore.solicitudes.push(e.solicitud);
+          admiStore.globalNotis++;
+          $q.notify({
+            message: `nueva solicitud con ID: ${e.solicitud.id} recibida.`,
+            icon: "announcement",
+            position: "top-right",
+            color: "teal",
+          });
         }
       );
       apiEvents.Echo.channel("EstadoActualizado").listen(
@@ -142,6 +152,12 @@ export default {
             (s) => s.id == e.solicitud.id
           );
           admiStore.solicitudes[index] = e.solicitud;
+          $q.notify({
+            message: `Solicitud: ${e.solicitud.id}. ha sido actualizada.`,
+            icon: "warning",
+            position: "top-right",
+            color: "warning",
+          });
         }
       );
     });

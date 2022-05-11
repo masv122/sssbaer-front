@@ -31,21 +31,21 @@
         <q-btn
           round
           dense
-          @click="notificacionSolicitudNueva = 0"
+          @click="admiStore.globalNotis = 0"
           flat
           color="grey-8"
           icon="notifications"
         >
           <q-badge
-            v-show="notificacionSolicitudNueva > 0"
+            v-show="admiStore.globalNotis > 0"
             color="red"
             text-color="white"
             floating
           >
-            {{ notificacionSolicitudNueva }}
+            {{ admiStore.globalNotis }}
           </q-badge>
           <q-tooltip>{{
-            notificacionSolicitudNueva > 0
+            admiStore.globalNotis > 0
               ? "Borrar notificaciones"
               : "Notificaciones"
           }}</q-tooltip>
@@ -64,6 +64,7 @@ import { ref } from "@vue/reactivity";
 import { useRouter } from "vue-router";
 import { useQuasar } from "quasar";
 import { useSesion } from "src/stores/sesion";
+import { useAdmiStore } from "src/stores/admiStore";
 export default {
   name: "HeaderAdmi",
   props: {
@@ -73,10 +74,10 @@ export default {
     },
   },
   setup() {
-    const notificacionSolicitudNueva = ref(-1);
     const sesion = useSesion();
     const $q = useQuasar();
     const router = useRouter();
+    const admiStore = useAdmiStore();
     const cerrarSesion = async () => {
       try {
         const response = await sesion.logout();
@@ -99,8 +100,8 @@ export default {
       }
     };
     return {
-      notificacionSolicitudNueva,
       cerrarSesion,
+      admiStore,
     };
   },
 };

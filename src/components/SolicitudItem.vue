@@ -50,12 +50,14 @@ export default {
   props: {
     data: Object,
   },
-  setup(props) {
+  emits: ["updateSolicitud"],
+  setup(props, ctx) {
     onMounted(() => {
-      apiEvents.Echo.private(`solicitud.${props.data.row.id}`).listen(
+      apiEvents.Echo.private(`solicitudes.${props.data.row.id}`).listen(
         "SolicitudUsuarioActualizada",
         (e) => {
           console.log(e);
+          ctx.emit("updateSolicitud", e.solicitud);
         }
       );
     });

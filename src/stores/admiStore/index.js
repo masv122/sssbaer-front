@@ -6,6 +6,8 @@ const sesion = useSesion();
 export const useAdmiStore = defineStore("admiStore", {
   state: () => ({
     solicitudes: [],
+    globalNotis: 0,
+    admiNotis: 0,
   }),
   getters: {
     misSolicitudes: (state) =>

@@ -34,6 +34,7 @@
           <q-td auto-width>
             <q-btn
               round
+              flat
               color="negative"
               icon="cancel"
               class="q-mr-md"
@@ -47,6 +48,7 @@
               "
             />
             <q-btn
+              flat
               round
               color="green"
               icon="check"
@@ -72,10 +74,12 @@
   </div>
 </template>
 <script>
-import { onMounted, ref, reactive } from "@vue/runtime-core";
-import { useSesion } from "stores/sesion";
+import { onMounted, reactive } from "@vue/runtime-core";
 import { useAdmiStore } from "src/stores/admiStore";
+import { apiEvents } from "src/boot/pusher";
 const columns = [
+  { name: "id", label: "ID", field: "id" },
+  { name: "nombre", label: "Nombre", field: "name" },
   { name: "coordinacion", label: "Coordinacion", field: "coordinacion" },
   { name: "problema", label: "Tipo de problema", field: "problema" },
   {
@@ -87,10 +91,19 @@ const columns = [
 
 export default {
   setup() {
-    const sesion = useSesion();
     const admiStore = useAdmiStore();
     const solicitudes = reactive([]);
-    onMounted(() => {});
+    onMounted(() => {
+      apiEvents.Echo.channel("EstadoActualizado").listen(
+        "EstadoActualizado",
+        (e) => {
+          const index = admiStore.solicitudes.findIndex(
+            (s) => s.id == e.solicitud.id
+          );
+          admiStore.solicitudes[index] = e.solicitud;
+        }
+      );
+    });
     return {
       columns,
       solicitudes,

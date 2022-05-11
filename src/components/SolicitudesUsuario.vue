@@ -8,7 +8,7 @@
     hide-header
   >
     <template v-slot:item="props">
-      <solicitud-item :data="props" />
+      <solicitud-item :data="props" @updateSolicitud="updateSolicitud" />
     </template>
   </q-table>
 </template>
@@ -18,9 +18,8 @@ import { onMounted, reactive } from "@vue/runtime-core";
 import { useSesion } from "stores/sesion";
 import { api } from "src/boot/axios";
 import SolicitudItem from "components/SolicitudItem.vue";
-import { apiEvents } from "src/boot/pusher";
 const columns = [
-  { name: "coordinacion", label: "Coordinacion", field: "coordinacion" },
+  { name: "coordinacion", label: "Coordinacion", field: "name" },
   { name: "problema", label: "Tipo de problema", field: "problema" },
   {
     name: "comentarioAdicional",
@@ -38,8 +37,11 @@ export default {
     const sesion = useSesion();
     const usuario = sesion.data.user;
     const solicitudes = reactive([]);
+    const updateSolicitud = (solicitud) => {
+      const index = solicitudes.findIndex((s) => s.id == solicitud.id);
+      solicitudes[index] = solicitud;
+    };
     onMounted(async () => {
-      console.log(apiEvents.Echo);
       const response = await api.post(
         "/solicitudes-usuario",
         {
@@ -55,6 +57,7 @@ export default {
     return {
       columns,
       solicitudes,
+      updateSolicitud,
     };
   },
 };
