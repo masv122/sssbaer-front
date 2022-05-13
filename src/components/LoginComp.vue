@@ -1,16 +1,14 @@
 <template>
-  <q-card class="login">
+  <q-card class="bg-blue-grey-1" style="width: 400px; height: 420px">
     <q-card-section class="q-pt-none">
       <div class="q-pa-md">
-        <q-form @submit.prevent.stop="onSubmit" class="q-gutter-md">
-          <div class="text-h5 text-negative">Ingresa tus credenciales</div>
-          <q-separator />
+        <q-form @submit.prevent.stop="onSubmit" class="q-gutter-sm">
+          <div class="text-h5 text-center text-negative q-mb-lg">Ingreso</div>
           <q-input
-            filled
+            color="negative"
             ref="refcorreo"
             v-model="correo"
-            label="Correo *"
-            hint="Ingrese su correo"
+            label="Correo"
             lazy-rules
             :rules="[
               (val) => (val && val.length > 0) || 'Porfavor ingrese el correo',
@@ -18,13 +16,12 @@
           />
 
           <q-input
+            color="negative"
             v-model="contraseña"
-            filled
             lazy-rules
             ref="refContraseña"
-            label="Contraseña *"
+            label="Contraseña"
             :type="esVisible ? 'password' : 'text'"
-            hint="Ingrese la contraseña"
             :rules="[
               (val) =>
                 (val && val.length > 0) || 'Porfavor ingrese una contraseña',
@@ -40,6 +37,7 @@
           </q-input>
 
           <q-checkbox
+            color="negative"
             v-model="recordar"
             label="Recordar sesion"
             checked-icon="task_alt"

@@ -8,14 +8,14 @@
     hide-header
   >
     <template v-slot:top>
-      <q-icon name="view_list" color="primary" size="3em" />
+      <q-icon name="view_list" color="negative" size="3em" />
 
       <q-space />
 
       <q-btn
         class="glossy"
         round
-        color="primary"
+        color="negative"
         icon="refresh"
         @click="admiStore.cargarSolicitudes()"
       />
@@ -35,17 +35,17 @@
           >
             <q-breadcrumbs class="text-grey">
               <template v-slot:separator>
-                <q-icon size="1.5em" name="chevron_right" color="primary" />
+                <q-icon size="1.5em" name="chevron_right" color="negative" />
               </template>
               <q-breadcrumbs-el
                 icon="hourglass_empty"
-                :class="!!props.row.enProceso ? 'text-blue' : ''"
+                :class="!!props.row.enProceso ? 'text-negative' : ''"
               />
               <q-breadcrumbs-el
                 icon="check_circle"
-                :class="!!props.row.terminado ? 'text-green' : ''"
+                :class="!!props.row.terminado ? 'text-negative' : ''"
               />
-              s-el icon="verified" />
+              <q-breadcrumbs-el icon="verified" />
             </q-breadcrumbs>
           </q-card-section>
           <q-card-actions align="right" v-else>
@@ -153,10 +153,9 @@ export default {
           );
           admiStore.solicitudes[index] = e.solicitud;
           $q.notify({
-            message: `Solicitud: ${e.solicitud.id}. ha sido actualizada.`,
-            icon: "warning",
-            position: "top-right",
-            color: "warning",
+            color: "info",
+            icon: "info",
+            message: `Solicitud con ID: ${e.solicitud.id} con problema de ${e.solicitud.problema} ha actualizado su status`,
           });
         }
       );

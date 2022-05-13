@@ -7,14 +7,14 @@
       row-key="id"
     >
       <template v-slot:top>
-        <q-icon name="checklist" color="primary" size="3em" />
+        <q-icon name="checklist" color="negative" size="3em" />
 
         <q-space />
 
         <q-btn
           class="glossy"
           round
-          color="primary"
+          color="negative"
           icon="refresh"
           @click="admiStore.cargarSolicitudes()"
         />

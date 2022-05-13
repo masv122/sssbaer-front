@@ -1,8 +1,8 @@
 <template>
-  <q-header elevated class="bg-white text-grey-8" height-hint="64">
+  <q-header elevated class="bg-white" height-hint="64">
     <img src="~assets/banner_oficial.png" class="banner" />
 
-    <q-toolbar class="GPL__toolbar" style="height: 64px">
+    <q-toolbar class="bg-white text-negative" style="height: 64px">
       <q-btn
         flat
         dense
@@ -19,13 +19,13 @@
         shrink
         class="row items-center no-wrap"
       >
-        <span class="q-ml-sm">Sistema de solicitud de ayuda del BAER</span>
+        <span class="q-ml-sm">Asisteme BAER</span>
       </q-toolbar-title>
 
       <q-space />
 
       <div class="q-gutter-sm row items-center no-wrap">
-        <q-btn round dense flat color="grey-8" icon="person">
+        <q-btn round dense flat icon="person">
           <q-tooltip>{{ nombre }}</q-tooltip>
         </q-btn>
         <q-btn
@@ -33,7 +33,6 @@
           dense
           @click="admiStore.globalNotis = 0"
           flat
-          color="grey-8"
           icon="notifications"
         >
           <q-badge
@@ -50,7 +49,7 @@
               : "Notificaciones"
           }}</q-tooltip>
         </q-btn>
-        <q-btn round dense flat color="grey-8" @click="cerrarSesion()">
+        <q-btn round dense flat @click="cerrarSesion()">
           <q-icon name="logout" />
           <q-tooltip>Salir</q-tooltip>
         </q-btn>

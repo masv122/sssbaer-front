@@ -3,10 +3,51 @@
     title="Mis solicitudes"
     :rows="solicitudes"
     :columns="columns"
-    row-key="enProceso"
+    row-key="id"
     grid
     hide-header
   >
+    <template v-slot:top>
+      <q-toggle
+        v-model="sinAtender"
+        color="red"
+        label="Sin atender"
+        @click="
+          cargarSolicitudes();
+          todas = false;
+        "
+      />
+      <q-toggle
+        v-model="enEspera"
+        color="red"
+        label="En espera"
+        @click="
+          cargarSolicitudes();
+          todas = false;
+        "
+      />
+      <q-toggle
+        v-model="completadas"
+        color="red"
+        label="Completadas"
+        @click="
+          cargarSolicitudes();
+          todas = false;
+        "
+      />
+      <q-toggle
+        v-model="todas"
+        color="red"
+        label="Todas"
+        @click="cargarSolicitudes()"
+      />
+      <q-space />
+      <!--       <q-input borderless dense debounce="300" color="primary" v-model="filter">
+        <template v-slot:append>
+          <q-icon name="search" />
+        </template>
+      </q-input> -->
+    </template>
     <template v-slot:item="props">
       <solicitud-item :data="props" @updateSolicitud="updateSolicitud" />
     </template>
@@ -14,12 +55,12 @@
 </template>
 
 <script>
-import { onMounted, reactive } from "@vue/runtime-core";
+import { onMounted, reactive, ref } from "@vue/runtime-core";
 import { useSesion } from "stores/sesion";
 import { api } from "src/boot/axios";
 import SolicitudItem from "components/SolicitudItem.vue";
 const columns = [
-  { name: "coordinacion", label: "Coordinacion", field: "name" },
+  { name: "coordinacion", label: "Coordinacion", field: "coordinacion" },
   { name: "problema", label: "Tipo de problema", field: "problema" },
   {
     name: "comentarioAdicional",
@@ -35,13 +76,14 @@ export default {
   name: "SolicitudesUsuario",
   setup() {
     const sesion = useSesion();
+    const sinAtender = ref(false);
+    const enEspera = ref(false);
+    const completadas = ref(false);
+    const todas = ref(true);
     const usuario = sesion.data.user;
     const solicitudes = reactive([]);
-    const updateSolicitud = (solicitud) => {
-      const index = solicitudes.findIndex((s) => s.id == solicitud.id);
-      solicitudes[index] = solicitud;
-    };
-    onMounted(async () => {
+    const cargarSolicitudes = async () => {
+      solicitudes.length = 0;
       const response = await api.post(
         "/solicitudes-usuario",
         {
@@ -51,13 +93,33 @@ export default {
       );
       const solicitudesResponse = response.data.solicitudes;
       solicitudesResponse.forEach((solicitud) => {
-        solicitudes.push(solicitud);
+        if (todas.value) solicitudes.push(solicitud);
+        else {
+          if (sinAtender.value && !solicitud.enProceso && !solicitud.terminado)
+            solicitudes.push(solicitud);
+          if (enEspera.value && solicitud.enProceso && !solicitud.terminado)
+            solicitudes.push(solicitud);
+          if (completadas.value && solicitud.terminado)
+            solicitudes.push(solicitud);
+        }
       });
+    };
+    const updateSolicitud = (solicitud) => {
+      const index = solicitudes.findIndex((s) => s.id == solicitud.id);
+      solicitudes[index] = solicitud;
+    };
+    onMounted(async () => {
+      cargarSolicitudes();
     });
     return {
       columns,
       solicitudes,
       updateSolicitud,
+      cargarSolicitudes,
+      sinAtender,
+      enEspera,
+      completadas,
+      todas,
     };
   },
 };

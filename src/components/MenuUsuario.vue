@@ -1,45 +1,62 @@
 <template>
-  <q-drawer v-model="drawerModel" show-if-above :width="300" :breakpoint="1000">
-    <q-scroll-area
-      style="
-        height: calc(100% - 150px);
-        margin-top: 150px;
-        border-right: 1px solid #ddd;
-      "
-    >
+  <q-drawer
+    v-model="drawerModel"
+    show-if-above
+    :width="200"
+    :breakpoint="650"
+    bordered
+  >
+    <q-scroll-area class="fit">
+      <q-toolbar class="GPL__toolbar">
+        <q-toolbar-title class="row items-center text-grey-8">
+          <span class="q-ml-sm">Asisteme BAER</span>
+        </q-toolbar-title>
+      </q-toolbar>
       <q-list padding>
-        <q-item clickable v-ripple :to="{ name: 'crear solicitud' }">
+        <q-item clickable v-ripple>
           <q-item-section avatar>
-            <q-icon name="add" />
+            <q-icon name="person" size="1.5em" />
           </q-item-section>
-
-          <q-item-section> Crear solicitud </q-item-section>
+          <q-item-section>
+            <q-item-label overline>nombre</q-item-label>
+            <q-item-label>{{ usuario.name }}</q-item-label>
+          </q-item-section>
         </q-item>
-
-        <q-item clickable v-ripple :to="{ name: 'solicitudes usuario' }">
+        <q-item clickable v-ripple>
+          <q-item-section avatar>
+            <q-icon name="email" size="1.5em" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label overline>correo</q-item-label>
+            <q-item-label>{{ usuario.email }}</q-item-label>
+          </q-item-section>
+        </q-item>
+        <q-item
+          clickable
+          v-ripple
+          :to="{ name: 'solicitudes usuario' }"
+          active-class="text-negative"
+        >
           <q-item-section avatar>
             <q-icon name="list" />
           </q-item-section>
 
           <q-item-section> Mis solicitudes </q-item-section>
         </q-item>
+        <q-item
+          clickable
+          v-ripple
+          :to="{ name: 'crear solicitud' }"
+          active-class="text-negative"
+        >
+          <q-item-section avatar>
+            <q-icon name="add" />
+          </q-item-section>
+
+          <q-item-section> Crear solicitud </q-item-section>
+        </q-item>
       </q-list>
     </q-scroll-area>
-
-    <q-img
-      class="absolute-top"
-      src="https://pbs.twimg.com/media/B33SGbYIMAAhrVR.png"
-      :ratio="16 / 9"
-      style="height: 150px"
-    >
-      <div class="absolute-bottom bg-transparent text-black">
-        <q-avatar size="56px" class="q-mb-sm">
-          <q-icon name="person" size="1.5em"
-        /></q-avatar>
-        <div class="text-weight-bold text-h6">{{ usuario.name }}</div>
-        <div>{{ usuario.email }}</div>
-      </div>
-    </q-img>
   </q-drawer>
 </template>
 

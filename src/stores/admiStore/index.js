@@ -8,12 +8,23 @@ export const useAdmiStore = defineStore("admiStore", {
     solicitudes: [],
     globalNotis: 0,
     admiNotis: 0,
+    usuarios: [],
   }),
   getters: {
     misSolicitudes: (state) =>
       state.solicitudes.filter(
         (solicitud) => solicitud.idAdministrador == sesion.data.user.id
       ),
+    usuariosTrabajadores: (state) =>
+      state.usuarios.filter((user) => user.admi === 0),
+    usuariosAdministradores: (state) =>
+      state.usuarios.filter((user) => user.admi === 1),
+    solicitudesSinAtender: (state) =>
+      state.solicitudes.filter((s) => !s.enProceso && !s.terminado),
+    solicitudesAtendidas: (state) =>
+      state.solicitudes.filter((s) => s.enProceso && !s.terminado),
+    solicitudesCompletadas: (state) =>
+      state.solicitudes.filter((s) => !s.enProceso && s.terminado),
   },
   actions: {
     async cargarSolicitudes() {
@@ -22,6 +33,22 @@ export const useAdmiStore = defineStore("admiStore", {
       const solicitudesResponse = response.data.solicitudes;
       solicitudesResponse.forEach((solicitud) => {
         if (!solicitud.terminado) this.solicitudes.push(solicitud);
+      });
+    },
+    async cargarTodasLasSolicitudes() {
+      this.solicitudes.length = 0;
+      const response = await api.get("/solicitudes");
+      const solicitudesResponse = response.data.solicitudes;
+      solicitudesResponse.forEach((solicitud) => {
+        this.solicitudes.push(solicitud);
+      });
+    },
+    async cargarUsuarios() {
+      this.usuarios.length = 0;
+      const response = await api.get("/users", sesion.authorizacion);
+      const userData = response.data.users;
+      userData.forEach((user) => {
+        this.usuarios.push(user);
       });
     },
 

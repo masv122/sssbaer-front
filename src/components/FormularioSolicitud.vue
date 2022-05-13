@@ -1,53 +1,60 @@
 <template>
   <div class="flex flex-center">
-    <div class="q-pa-md shadow-1" style="width: 600px">
-      <q-form @submit="onSubmit" @reset="onReset" class="q-gutter-md">
-        <div class="text-h5">Formulario de solicitud</div>
-        <q-separator inset />
-        <q-select
-          outlined
-          class="q-mb-lg"
-          ref="refCoordinacion"
-          style="max-width: 300px"
-          v-model="coordinacion"
-          :options="coordinaciones"
-          label="Coordinación"
-          :rules="[(val) => !!val || '* Seleccione una coordinacion']"
-          lazy-rules
-        />
+    <q-card class="bg-blue-grey-1" style="width: 600px; height: 420px">
+      <q-card-section class="q-pt-none">
+        <div class="q-pa-md">
+          <q-form @submit="onSubmit" @reset="onReset">
+            <div class="text-h5 text-center text-negative q-mb-lg">
+              Formulario de solicitud
+            </div>
+            <q-select
+              label-color="negative"
+              color="negative"
+              ref="refCoordinacion"
+              style="max-width: 300px"
+              v-model="coordinacion"
+              :options="coordinaciones"
+              label="Coordinación"
+              :rules="[(val) => !!val || '* Seleccione una coordinacion']"
+              lazy-rules
+            />
 
-        <q-select
-          outlined
-          style="max-width: 300px"
-          class="q-mb-lg"
-          ref="refProblema"
-          v-model="problema"
-          :options="tipoDeProblema"
-          label="Tipo de problema"
-          :rules="[(val) => !!val || '* Seleccione un tipo de problema']"
-          lazy-rules
-        />
+            <q-select
+              label-color="negative"
+              color="negative"
+              style="max-width: 300px"
+              ref="refProblema"
+              v-model="problema"
+              :options="tipoDeProblema"
+              label="Tipo de problema"
+              :rules="[(val) => !!val || '* Seleccione un tipo de problema']"
+              lazy-rules
+            />
 
-        <q-input
-          class="q-mb-lg"
-          label="Comentarios adicionales"
-          v-model="comentarioAdicional"
-          filled
-          type="textarea"
-        />
+            <q-input
+              label-color="negative"
+              color="negative"
+              class="q-mb-lg"
+              label="Comentarios adicionales"
+              v-model="comentarioAdicional"
+              filled
+              type="textarea"
+            />
 
-        <div>
-          <q-btn label="Enviar" type="submit" color="primary" />
-          <q-btn
-            label="Restablecer"
-            type="reset"
-            color="negative"
-            flat
-            class="q-ml-sm"
-          />
+            <div>
+              <q-btn label="Enviar" type="submit" color="negative" />
+              <q-btn
+                label="Restablecer"
+                type="reset"
+                color="negative"
+                flat
+                class="q-ml-sm"
+              />
+            </div>
+          </q-form>
         </div>
-      </q-form>
-    </div>
+      </q-card-section>
+    </q-card>
   </div>
 </template>
 

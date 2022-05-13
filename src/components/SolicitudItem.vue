@@ -6,11 +6,11 @@
       <q-card-section class="row justify-between">
         <q-breadcrumbs class="text-grey">
           <template v-slot:separator>
-            <q-icon size="1.5em" name="chevron_right" color="primary" />
+            <q-icon size="1.5em" name="chevron_right" color="negative" />
           </template>
           <q-breadcrumbs-el
             icon="hourglass_empty"
-            :class="data.row.enProceso ? 'text-blue' : ''"
+            :class="data.row.enProceso ? 'text-negative' : ''"
           />
           <q-breadcrumbs-el
             icon="check_circle"
@@ -18,7 +18,7 @@
           />
           <q-breadcrumbs-el icon="verified" />
         </q-breadcrumbs>
-        <q-badge color="blue"> ID: {{ data.row.id }} </q-badge>
+        <q-badge color="negative"> ID: {{ data.row.id }} </q-badge>
       </q-card-section>
       <q-separator />
       <q-list dense>
@@ -44,6 +44,7 @@
 import { onMounted } from "@vue/runtime-core";
 import { apiEvents } from "src/boot/pusher";
 import AdministradorComp from "components/AdministradorComp.vue";
+import { useQuasar } from "quasar";
 export default {
   components: { AdministradorComp },
   name: "SolicitudItem",
@@ -52,12 +53,18 @@ export default {
   },
   emits: ["updateSolicitud"],
   setup(props, ctx) {
+    const $q = useQuasar();
     onMounted(() => {
       apiEvents.Echo.private(`solicitudes.${props.data.row.id}`).listen(
         "SolicitudUsuarioActualizada",
         (e) => {
-          console.log(e);
           ctx.emit("updateSolicitud", e.solicitud);
+          $q.notify({
+            color: "info",
+            icon: "info",
+            message: `Solicitud con ID: ${e.solicitud.id} con problema de ${e.solicitud.problema} ha actualizado su status`,
+            position: "top-right",
+          });
         }
       );
     });

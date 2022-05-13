@@ -3,19 +3,21 @@
     <q-scroll-area class="fit">
       <q-toolbar class="GPL__toolbar">
         <q-toolbar-title class="row items-center text-grey-8">
-          <span class="q-ml-sm">Menu</span>
+          <span class="q-ml-sm">Asisteme BAER</span>
         </q-toolbar-title>
       </q-toolbar>
       <q-list padding>
         <q-separator class="q-my-md" />
 
         <q-item
+          v-ripple
+          active-class="text-negative"
           clickable
           class="GPL__drawer-item"
           :to="{ name: 'solicitudes admi' }"
         >
           <q-item-section avatar>
-            <q-icon name="view_list" />
+            <q-icon name="view_list" color="negative" />
           </q-item-section>
           <q-item-section>
             <q-item-label>Solicitudes</q-item-label>
@@ -25,12 +27,14 @@
         <q-separator class="q-my-md" />
 
         <q-item
+          v-ripple
+          active-class="text-negative"
           clickable
           class="GPL__drawer-item"
           :to="{ name: 'solicitudes realizadas admi' }"
         >
           <q-item-section avatar>
-            <q-icon name="checklist" />
+            <q-icon name="checklist" color="negative" />
           </q-item-section>
           <q-item-section>
             <q-item-label>Atendidas por mi</q-item-label>
@@ -40,12 +44,14 @@
         <q-separator class="q-my-md" />
 
         <q-item
+          v-ripple
+          active-class="text-negative"
           clickable
           class="GPL__drawer-item"
           :to="{ name: 'gestion de cuentas' }"
         >
           <q-item-section avatar>
-            <q-icon name="manage_accounts" />
+            <q-icon name="manage_accounts" color="negative" />
           </q-item-section>
           <q-item-section>
             <q-item-label>Gestion de cuentas</q-item-label>
@@ -56,11 +62,14 @@
         <q-item disable class="GPL__drawer-item">
           <q-item-section>{{ user.name }}</q-item-section>
           <q-item-section avatar>
-            <q-icon color="primary" name="person" />
+            <q-icon color="negative" name="person" />
           </q-item-section>
         </q-item>
         <q-item disable class="GPL__drawer-item">
-          <q-item-label>Correo: {{ user.email }}</q-item-label>
+          <q-item-section>{{ user.email }}</q-item-section>
+          <q-item-section avatar>
+            <q-icon color="negative" name="email" />
+          </q-item-section>
         </q-item>
         <q-item disable class="GPL__drawer-item">
           <q-item-label>ID: {{ user.id }}</q-item-label>

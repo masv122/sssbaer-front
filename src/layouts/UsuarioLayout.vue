@@ -1,6 +1,10 @@
 <template>
-  <q-layout view="lHh Lpr lff">
-    <menu-usuario :drawer="drawer" @changeDrawer="drawer = !drawer" />
+  <q-layout view="lHh Lpr lff" class="bg-grey-2">
+    <menu-usuario
+      :drawer="drawer"
+      @changeDrawer="drawer = !drawer"
+      v-show="false === false"
+    />
     <header-usuario @changeDrawer="drawer = !drawer" />
     <q-page-container>
       <q-page padding>
