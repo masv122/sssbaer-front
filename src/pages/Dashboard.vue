@@ -37,12 +37,7 @@
         </div>
       </q-card-section>
       <q-card-section>
-        <apexchart
-          type="bar"
-          height="350"
-          :options="chartOptions"
-          :series="series"
-        ></apexchart>
+        <estadisticas-dashboard />
       </q-card-section>
     </q-card>
   </q-page>
@@ -52,22 +47,16 @@
 import CardSocial from "src/components/cards/CardSocial.vue";
 import { useAdmiStore } from "src/stores/admiStore";
 import { computed, onMounted, reactive, watch } from "@vue/runtime-core";
+import EstadisticasDashboard from "src/components/charts/EstadisticasDashboard.vue";
 
 export default {
   name: "DashboardSupervisor",
   components: {
     CardSocial,
+    EstadisticasDashboard,
   },
   setup() {
     const admiStore = useAdmiStore();
-    const iniciarTodaLaData = async () => {
-      await admiStore.cargarUsuarios();
-      await admiStore.cargarTodasLasSolicitudes();
-    };
-
-    onMounted(() => {
-      iniciarTodaLaData();
-    });
     return {
       admiStore,
       estadisticas: computed(() => [
@@ -96,69 +85,6 @@ export default {
           texto: "Canceladas",
         },
       ]),
-      series: [
-        {
-          name: "Net Profit",
-          data: [44, 55, 57, 56, 61, 58, 63, 60, 66],
-        },
-        {
-          name: "Revenue",
-          data: [76, 85, 101, 98, 87, 105, 91, 114, 94],
-        },
-        {
-          name: "Free Cash Flow",
-          data: [35, 41, 36, 26, 45, 48, 52, 53, 41],
-        },
-      ],
-      chartOptions: {
-        chart: {
-          type: "bar",
-          height: 350,
-        },
-        plotOptions: {
-          bar: {
-            horizontal: false,
-            columnWidth: "55%",
-            endingShape: "rounded",
-          },
-        },
-        dataLabels: {
-          enabled: false,
-        },
-        stroke: {
-          show: true,
-          width: 2,
-          colors: ["transparent"],
-        },
-        xaxis: {
-          categories: [
-            "Feb",
-            "Mar",
-            "Apr",
-            "May",
-            "Jun",
-            "Jul",
-            "Aug",
-            "Sep",
-            "Oct",
-          ],
-        },
-        yaxis: {
-          title: {
-            text: "$ (thousands)",
-          },
-        },
-        fill: {
-          opacity: 1,
-        },
-        tooltip: {
-          y: {
-            formatter: function (val) {
-              return "$ " + val + " thousands";
-            },
-          },
-        },
-      },
     };
   },
 };

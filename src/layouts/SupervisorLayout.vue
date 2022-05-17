@@ -104,7 +104,8 @@
 <script>
 import Messages from "components/MessagesComp.vue";
 
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
+import { useAdmiStore } from "src/stores/admiStore";
 
 export default {
   name: "MainLayout",
@@ -115,7 +116,15 @@ export default {
 
   setup() {
     const leftDrawerOpen = ref(false);
+    const admiStore = useAdmiStore();
+    const iniciarTodaLaData = async () => {
+      await admiStore.cargarUsuarios();
+      await admiStore.cargarTodasLasSolicitudes();
+    };
 
+    onMounted(() => {
+      iniciarTodaLaData();
+    });
     return {
       leftDrawerOpen,
       toggleLeftDrawer() {
