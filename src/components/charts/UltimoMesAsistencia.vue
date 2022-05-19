@@ -16,16 +16,16 @@ export default {
     return {
       series: [
         {
-          name: "Series 1",
-          data: [80, 50, 30, 40, 100, 20],
+          name: "Juan",
+          data: [80, 50],
         },
         {
-          name: "Series 2",
-          data: [20, 30, 40, 80, 20, 80],
+          name: "Pedro",
+          data: [20, 30],
         },
         {
-          name: "Series 3",
-          data: [44, 76, 78, 13, 43, 10],
+          name: "Luis",
+          data: [44, 76],
         },
       ],
       chartOptions: {
@@ -52,7 +52,7 @@ export default {
           size: 0,
         },
         xaxis: {
-          categories: ["2011", "2012", "2013", "2014", "2015", "2016"],
+          categories: ["Sin completar", "Completadas"],
         },
       },
     };

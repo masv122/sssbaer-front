@@ -5,15 +5,29 @@
       :options="chartOptions"
       :series="series"
     ></apexchart>
+    {{ series }}
   </div>
 </template>
 
 <script>
+import { computed } from "@vue/runtime-core";
+import { useAdmiStore } from "src/stores/admiStore";
 export default {
-  // name: 'ComponentName',
+  name: "TotalizacionDeSolicitudes",
+  mounted() {
+    this.$nextTick(() => {
+      window.dispatchEvent(new Event("resize"));
+    });
+  },
   setup() {
+    const admiStore = useAdmiStore();
+    const series = computed(() => [
+      admiStore.solicitudesSinAtender.length,
+      admiStore.solicitudesAtendidas.length,
+      admiStore.solicitudesCompletadas.length,
+    ]);
     return {
-      series: [14, 23, 21, 17, 15, 10, 12, 17, 21],
+      series,
       chartOptions: {
         chart: {
           type: "polarArea",
@@ -23,6 +37,13 @@ export default {
         },
         fill: {
           opacity: 0.8,
+        },
+        tooltip: {
+          y: {
+            formatter: function (val) {
+              return val + " solicitudes";
+            },
+          },
         },
         responsive: [
           {

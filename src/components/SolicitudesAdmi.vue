@@ -29,8 +29,9 @@
         <q-card :class="props.selected ? 'bg-grey-2' : ''">
           <q-card-section
             v-if="
-              !!props.row.idAdministrador &&
-              props.row.idAdministrador != sesion.data.user.id
+              (!!props.row.idAdministrador &&
+                props.row.idAdministrador != sesion.data.user.id) ||
+              supervisor
             "
           >
             <q-breadcrumbs class="text-grey">
@@ -126,39 +127,55 @@ export default {
   components: {
     AdministradorComp,
   },
-  setup() {
+  props: {
+    supervisor: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  setup(props) {
     const sesion = useSesion();
     const $q = useQuasar();
     const admiStore = useAdmiStore();
     onMounted(async () => {
-      await admiStore.cargarSolicitudes();
-      apiEvents.Echo.channel("SolicitudEnviada").listen(
-        "SolicitudEnviada",
-        (e) => {
-          admiStore.solicitudes.push(e.solicitud);
-          admiStore.globalNotis++;
-          $q.notify({
-            message: `nueva solicitud con ID: ${e.solicitud.id} recibida.`,
-            icon: "announcement",
-            position: "top-right",
-            color: "teal",
-          });
-        }
-      );
-      apiEvents.Echo.channel("EstadoActualizado").listen(
-        "EstadoActualizado",
-        (e) => {
-          const index = admiStore.solicitudes.findIndex(
-            (s) => s.id == e.solicitud.id
-          );
-          admiStore.solicitudes[index] = e.solicitud;
-          $q.notify({
-            color: "info",
-            icon: "info",
-            message: `Solicitud con ID: ${e.solicitud.id} con problema de ${e.solicitud.problema} ha actualizado su status`,
-          });
-        }
-      );
+      if (props.supervisor) await admiStore.cargarTodasLasSolicitudes();
+      else await admiStore.cargarSolicitudes();
+      try {
+        apiEvents.Echo.channel("SolicitudEnviada").listen(
+          "SolicitudEnviada",
+          (e) => {
+            admiStore.solicitudes.push(e.solicitud);
+            admiStore.globalNotis++;
+            $q.notify({
+              message: `nueva solicitud con ID: ${e.solicitud.id} recibida.`,
+              icon: "announcement",
+              position: "top-right",
+              color: "teal",
+            });
+          }
+        );
+        apiEvents.Echo.channel("EstadoActualizado").listen(
+          "EstadoActualizado",
+          (e) => {
+            const index = admiStore.solicitudes.findIndex(
+              (s) => s.id == e.solicitud.id
+            );
+            admiStore.solicitudes[index] = e.solicitud;
+            $q.notify({
+              color: "info",
+              icon: "info",
+              message: `Solicitud con ID: ${e.solicitud.id} con problema de ${e.solicitud.problema} ha actualizado su status`,
+            });
+          }
+        );
+      } catch (error) {
+        console.log(error);
+        $q.notify({
+          color: "negative",
+          icon: "info",
+          message: "No se ha podido conectar al servidor de websockets",
+        });
+      }
     });
     return {
       sesion,

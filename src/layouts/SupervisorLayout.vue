@@ -120,6 +120,7 @@ export default {
     const iniciarTodaLaData = async () => {
       await admiStore.cargarUsuarios();
       await admiStore.cargarTodasLasSolicitudes();
+      await admiStore.cargarSolicitudesEnProcesoOCompletadas();
     };
 
     onMounted(() => {

@@ -2,28 +2,26 @@
   <q-item clickable>
     <q-item-section avatar>
       <q-avatar>
-        <img :src="avatar">
+        <q-icon name="engineering" />
       </q-avatar>
     </q-item-section>
 
     <q-item-section>
       <q-item-label lines="1">{{ name }}</q-item-label>
       <q-item-label caption lines="2">
-        <span class="text-weight-bold">{{ position }}</span>
+        <span class="text-weight-bold">ID: {{ id }}</span>
       </q-item-label>
     </q-item-section>
   </q-item>
 </template>
 
 <script>
-import {defineComponent} from 'vue';
+import { defineComponent } from "vue";
 
 export default defineComponent({
   name: "ContactItem",
-  props: ['avatar', 'name', 'position']
-})
+  props: ["name", "id"],
+});
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

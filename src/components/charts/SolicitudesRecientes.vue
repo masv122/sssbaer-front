@@ -15,6 +15,11 @@ import { useAdmiStore } from "src/stores/admiStore";
 import { onMounted, watch } from "@vue/runtime-core";
 export default {
   name: "SolicitudesRecientes",
+  mounted() {
+    this.$nextTick(() => {
+      window.dispatchEvent(new Event("resize"));
+    });
+  },
   setup() {
     const admiStore = useAdmiStore();
     const series = reactive([
@@ -71,49 +76,52 @@ export default {
       fill: {
         opacity: 1,
       },
+      tooltip: {
+        y: {
+          formatter: function (val) {
+            return val + " solicitudes";
+          },
+        },
+      },
     });
-    watch(
-      () => admiStore.solicitudes.length,
-      () => {
-        const solicitudesPorDia = filtradoPorDia(admiStore.solicitudes);
-        console.log(solicitudesPorDia);
-        solicitudesPorDia.forEach((s) => {
-          series.forEach((se) => {
-            if (se.name === "Sin atender")
-              series[0].data.push(
-                admiStore.solicitudesSinAtender.filter(
-                  (ssa) =>
-                    new Date(ssa.created_at).toLocaleString("default", {
-                      day: "2-digit",
-                      month: "short",
-                    }) === s.day
-                ).length
-              );
-            else if (se.name === "En Proceso")
-              series[1].data.push(
-                admiStore.solicitudesAtendidas.filter(
-                  (ssa) =>
-                    new Date(ssa.created_at).toLocaleString("default", {
-                      day: "2-digit",
-                      month: "short",
-                    }) === s.day
-                ).length
-              );
-            else
-              series[2].data.push(
-                admiStore.solicitudesCompletadas.filter(
-                  (ssa) =>
-                    new Date(ssa.created_at).toLocaleString("default", {
-                      day: "2-digit",
-                      month: "short",
-                    }) === s.day
-                ).length
-              );
-          });
-          chartOptions.xaxis.categories.push(s.day);
+    onMounted(() => {
+      const solicitudesPorDia = filtradoPorDia(admiStore.solicitudes);
+      solicitudesPorDia.forEach((s) => {
+        series.forEach((se) => {
+          if (se.name === "Sin atender")
+            series[0].data.push(
+              admiStore.solicitudesSinAtender.filter(
+                (ssa) =>
+                  new Date(ssa.created_at).toLocaleString("default", {
+                    day: "2-digit",
+                    month: "short",
+                  }) === s.day
+              ).length
+            );
+          else if (se.name === "En Proceso")
+            series[1].data.push(
+              admiStore.solicitudesAtendidas.filter(
+                (ssa) =>
+                  new Date(ssa.created_at).toLocaleString("default", {
+                    day: "2-digit",
+                    month: "short",
+                  }) === s.day
+              ).length
+            );
+          else
+            series[2].data.push(
+              admiStore.solicitudesCompletadas.filter(
+                (ssa) =>
+                  new Date(ssa.created_at).toLocaleString("default", {
+                    day: "2-digit",
+                    month: "short",
+                  }) === s.day
+              ).length
+            );
         });
-      }
-    );
+        chartOptions.xaxis.categories.push(s.day);
+      });
+    });
     const filtradoPorDia = (array) => {
       let arrayFiltrado = [];
       array.reduce((previus, actual) => {

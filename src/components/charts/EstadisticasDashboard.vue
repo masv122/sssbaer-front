@@ -15,6 +15,11 @@ import { watch } from "@vue/runtime-core";
 import { useAdmiStore } from "src/stores/admiStore";
 export default {
   name: "EstadisticasDashboard",
+  mounted() {
+    this.$nextTick(() => {
+      window.dispatchEvent(new Event("resize"));
+    });
+  },
   setup() {
     const admiStore = useAdmiStore();
     const chartOptions = reactive({

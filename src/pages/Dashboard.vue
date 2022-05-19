@@ -44,9 +44,9 @@
 </template>
 
 <script>
-import CardSocial from "src/components/cards/CardSocial.vue";
+import CardSocial from "components/CardSocial.vue";
 import { useAdmiStore } from "src/stores/admiStore";
-import { computed, onMounted, reactive, watch } from "@vue/runtime-core";
+import { computed } from "@vue/runtime-core";
 import EstadisticasDashboard from "src/components/charts/EstadisticasDashboard.vue";
 
 export default {

@@ -9,6 +9,7 @@ export const useAdmiStore = defineStore("admiStore", {
     globalNotis: 0,
     admiNotis: 0,
     usuarios: [],
+    solicitudesEnProcesoOCompletadas: [],
   }),
   getters: {
     misSolicitudes: (state) =>
@@ -25,6 +26,13 @@ export const useAdmiStore = defineStore("admiStore", {
       state.solicitudes.filter((s) => s.enProceso && !s.terminado),
     solicitudesCompletadas: (state) =>
       state.solicitudes.filter((s) => !s.enProceso && s.terminado),
+    solicitudesCompletadasSupervisor: (state) =>
+      state.solicitudesEnProcesoOCompletadas.filter((s) =>
+        Boolean(s.terminado)
+      ),
+    getUserById: (state) => {
+      return (userId) => state.usuarios.find((user) => user.id === userId);
+    },
   },
   actions: {
     async cargarSolicitudes() {
@@ -41,6 +49,14 @@ export const useAdmiStore = defineStore("admiStore", {
       const solicitudesResponse = response.data.solicitudes;
       solicitudesResponse.forEach((solicitud) => {
         this.solicitudes.push(solicitud);
+      });
+    },
+    async cargarSolicitudesEnProcesoOCompletadas() {
+      this.solicitudesEnProcesoOCompletadas.length = 0;
+      const response = await api.get("/solicitudes-supervisor");
+      const solicitudesResponse = response.data.solicitudes;
+      solicitudesResponse.forEach((solicitud) => {
+        this.solicitudesEnProcesoOCompletadas.push(solicitud);
       });
     },
     async cargarUsuarios() {
