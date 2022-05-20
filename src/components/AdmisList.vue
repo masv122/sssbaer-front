@@ -46,15 +46,11 @@
           >
 
           <span
-            v-for="(favorite, index) in favorites_list"
-            :key="index"
-            @click="selected_contact = favorite"
+            v-for="(admi, index) in topAdmis"
+            :key="admi.id"
+            @click="$emit('updateSelectedAdmi', admi.id)"
           >
-            <contact-item
-              :avatar="favorite.avatar"
-              :name="favorite.name"
-              :position="favorite.position"
-            ></contact-item>
+            <contact-item :name="admi.name" :id="admi.id" :top="index" />
           </span>
         </q-list>
       </q-tab-panel>
@@ -68,11 +64,12 @@
 </template>
 
 <script>
-import { ref } from "@vue/reactivity";
+import { reactive, ref } from "@vue/reactivity";
 import ContactItem from "./ContactItem.vue";
 import { useAdmiStore } from "src/stores/admiStore";
 import { useQuasar } from "quasar";
 import { onMounted } from "@vue/runtime-core";
+import { api } from "src/boot/axios";
 export default {
   components: { ContactItem },
   name: "AdmisList",
@@ -80,10 +77,21 @@ export default {
   setup(props, ctx) {
     const admiStore = useAdmiStore();
     const $q = useQuasar();
+    const topAdmis = reactive([]);
     const administradores = admiStore.usuariosAdministradores;
-    onMounted(() => {
+    onMounted(async () => {
       if (!$q.screen.lt.sm && Boolean(administradores.length)) {
         ctx.emit("updateSelectedAdmi", administradores[0].id);
+      }
+      try {
+        const response = await api.get("top-admis");
+        const tops = response.data.users;
+        topAdmis.length = 0;
+        tops.forEach((u) => {
+          topAdmis.push(u);
+        });
+      } catch (error) {
+        console.log(error);
       }
     });
     return {
@@ -92,42 +100,7 @@ export default {
       search: ref(""),
       size: ref({ width: "200px", height: "200px" }),
       selectedAdmi: ref({}),
-
-      favorites_list: [
-        {
-          name: "Pratik Patel",
-          position: "Developer",
-          avatar: "https://avatars2.githubusercontent.com/u/34883558?s=400&v=4",
-          email: "pratikpatelpp802@gmail.com",
-          company_email: "pratikpatelpp802@gmail.com",
-          website: "www.test.com",
-          phone: "+9910101010",
-          secondary_phone: "+9910101010",
-          address: "BB 101 Om Sai Residency Palsana",
-        },
-        {
-          name: "Razvan Stoenescu",
-          position: "Developer",
-          avatar: "https://cdn.quasar.dev/team/razvan_stoenescu.jpeg",
-          email: "mailto:razvan@quasar.dev",
-          company_email: "mailto:razvan@quasar.dev",
-          website: "https://github.com/rstoenescu",
-          phone: "+1-004-658-0042",
-          secondary_phone: "(331) 009-4655 x3147",
-          address: "92290 Lisa Cove",
-        },
-        {
-          name: "Jeff Galbraith",
-          position: "Developer",
-          avatar: "https://cdn.quasar.dev/team/jeff_galbraith.jpg",
-          email: "mailto:jeff@quasar.dev",
-          company_email: "mailto:jeff@quasar.dev",
-          website: "http://jeffgalbraith.dev/",
-          phone: "175.718.4633 x878",
-          secondary_phone: "175.718.4633 x878",
-          address: "Calgary, Canada",
-        },
-      ],
+      topAdmis,
     };
   },
 };

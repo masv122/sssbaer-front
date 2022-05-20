@@ -55,18 +55,27 @@ export default {
   setup(props, ctx) {
     const $q = useQuasar();
     onMounted(() => {
-      apiEvents.Echo.private(`solicitudes.${props.data.row.id}`).listen(
-        "SolicitudUsuarioActualizada",
-        (e) => {
-          ctx.emit("updateSolicitud", e.solicitud);
-          $q.notify({
-            color: "info",
-            icon: "info",
-            message: `Solicitud con ID: ${e.solicitud.id} con problema de ${e.solicitud.problema} ha actualizado su status`,
-            position: "top-right",
-          });
-        }
-      );
+      try {
+        apiEvents.Echo.private(`solicitudes.${props.data.row.id}`).listen(
+          "SolicitudUsuarioActualizada",
+          (e) => {
+            ctx.emit("updateSolicitud", e.solicitud);
+            $q.notify({
+              color: "info",
+              icon: "info",
+              message: `Solicitud con ID: ${e.solicitud.id} con problema de ${e.solicitud.problema} ha actualizado su status`,
+              position: "top-right",
+            });
+          }
+        );
+      } catch (error) {
+        console.log(error);
+        $q.notify({
+          color: "negative",
+          icon: "info",
+          message: "No se ha podido conectar al servidor de websockets",
+        });
+      }
     });
     return {};
   },

@@ -11,7 +11,7 @@
 
 <script>
 import { reactive } from "@vue/reactivity";
-import { watch } from "@vue/runtime-core";
+import { onMounted, watch } from "@vue/runtime-core";
 import { useAdmiStore } from "src/stores/admiStore";
 export default {
   name: "EstadisticasDashboard",
@@ -78,41 +78,47 @@ export default {
     watch(
       () => admiStore.solicitudes.length,
       () => {
-        const solicitudesPorMeses = filtradoPorMes(admiStore.solicitudes);
-        solicitudesPorMeses.forEach((s) => {
-          series.forEach((se) => {
-            if (se.name === "Sin atender")
-              series[0].data.push(
-                admiStore.solicitudesSinAtender.filter(
-                  (ssa) =>
-                    new Date(ssa.created_at).toLocaleString("default", {
-                      month: "long",
-                    }) === s.mes
-                ).length
-              );
-            else if (se.name === "En Proceso")
-              series[1].data.push(
-                admiStore.solicitudesAtendidas.filter(
-                  (ssa) =>
-                    new Date(ssa.created_at).toLocaleString("default", {
-                      month: "long",
-                    }) === s.mes
-                ).length
-              );
-            else
-              series[2].data.push(
-                admiStore.solicitudesCompletadas.filter(
-                  (ssa) =>
-                    new Date(ssa.created_at).toLocaleString("default", {
-                      month: "long",
-                    }) === s.mes
-                ).length
-              );
-          });
-          chartOptions.xaxis.categories.push(s.mes);
-        });
+        cargarChart();
       }
     );
+    onMounted(() => {
+      if (Boolean(admiStore.solicitudes.length)) cargarChart();
+    });
+    const cargarChart = () => {
+      const solicitudesPorMeses = filtradoPorMes(admiStore.solicitudes);
+      solicitudesPorMeses.forEach((s) => {
+        series.forEach((se) => {
+          if (se.name === "Sin atender")
+            series[0].data.push(
+              admiStore.solicitudesSinAtender.filter(
+                (ssa) =>
+                  new Date(ssa.created_at).toLocaleString("default", {
+                    month: "long",
+                  }) === s.mes
+              ).length
+            );
+          else if (se.name === "En Proceso")
+            series[1].data.push(
+              admiStore.solicitudesAtendidas.filter(
+                (ssa) =>
+                  new Date(ssa.created_at).toLocaleString("default", {
+                    month: "long",
+                  }) === s.mes
+              ).length
+            );
+          else
+            series[2].data.push(
+              admiStore.solicitudesCompletadas.filter(
+                (ssa) =>
+                  new Date(ssa.created_at).toLocaleString("default", {
+                    month: "long",
+                  }) === s.mes
+              ).length
+            );
+        });
+        chartOptions.xaxis.categories.push(s.mes);
+      });
+    };
     const filtradoPorMes = (array) => {
       let arrayFiltrado = [];
       array.reduce((previus, actual) => {

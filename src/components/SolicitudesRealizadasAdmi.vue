@@ -77,6 +77,7 @@
 import { onMounted, reactive } from "@vue/runtime-core";
 import { useAdmiStore } from "src/stores/admiStore";
 import { apiEvents } from "src/boot/pusher";
+import { useQuasar } from "quasar";
 const columns = [
   { name: "id", label: "ID", field: "id" },
   { name: "nombre", label: "Nombre", field: "name" },
@@ -92,17 +93,27 @@ const columns = [
 export default {
   setup() {
     const admiStore = useAdmiStore();
+    const $q = useQuasar();
     const solicitudes = reactive([]);
     onMounted(() => {
-      apiEvents.Echo.channel("EstadoActualizado").listen(
-        "EstadoActualizado",
-        (e) => {
-          const index = admiStore.solicitudes.findIndex(
-            (s) => s.id == e.solicitud.id
-          );
-          admiStore.solicitudes[index] = e.solicitud;
-        }
-      );
+      try {
+        apiEvents.Echo.channel("EstadoActualizado").listen(
+          "EstadoActualizado",
+          (e) => {
+            const index = admiStore.solicitudes.findIndex(
+              (s) => s.id == e.solicitud.id
+            );
+            admiStore.solicitudes[index] = e.solicitud;
+          }
+        );
+      } catch (error) {
+        console.log(error);
+        $q.notify({
+          color: "negative",
+          icon: "info",
+          message: "No se ha podido conectar al servidor de websockets",
+        });
+      }
     });
     return {
       columns,

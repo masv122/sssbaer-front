@@ -1,5 +1,10 @@
 <template>
-  <q-card class="bg-blue-grey-1" style="width: 400px; height: 420px">
+  <q-card
+    class="bg-blue-grey-1"
+    flat
+    bordered
+    style="width: 400px; height: 420px"
+  >
     <q-card-section class="q-pt-none">
       <div class="q-pa-md">
         <q-form @submit.prevent.stop="onSubmit" class="q-gutter-sm">

@@ -83,15 +83,6 @@
             <q-item-label>Administradores</q-item-label>
           </q-item-section>
         </q-item>
-
-        <q-item to="/Contact" active-class="q-item-no-link-highlighting">
-          <q-item-section avatar>
-            <q-icon name="person" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>Usuarios</q-item-label>
-          </q-item-section>
-        </q-item>
       </q-list>
     </q-drawer>
 
