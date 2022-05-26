@@ -23,7 +23,7 @@
             :key="admi.id"
             @click="$emit('updateSelectedAdmi', admi.id)"
           >
-            <contact-item :name="admi.name" :id="admi.id"></contact-item>
+            <admi-item :name="admi.name" :id="admi.id" />
           </span>
         </q-list>
       </q-tab-panel>
@@ -50,7 +50,7 @@
             :key="admi.id"
             @click="$emit('updateSelectedAdmi', admi.id)"
           >
-            <contact-item :name="admi.name" :id="admi.id" :top="index" />
+            <admi-item :name="admi.name" :id="admi.id" :top="index" />
           </span>
         </q-list>
       </q-tab-panel>
@@ -65,26 +65,28 @@
 
 <script>
 import { reactive, ref } from "@vue/reactivity";
-import ContactItem from "./ContactItem.vue";
+import AdmiItem from "components/AdmiItem.vue";
 import { useAdmiStore } from "src/stores/admiStore";
 import { useQuasar } from "quasar";
 import { onMounted } from "@vue/runtime-core";
 import { api } from "src/boot/axios";
+import { useSesion } from "src/stores/sesion";
 export default {
-  components: { ContactItem },
+  components: { AdmiItem },
   name: "AdmisList",
   emits: ["updateSelectedAdmi"],
   setup(props, ctx) {
     const admiStore = useAdmiStore();
     const $q = useQuasar();
     const topAdmis = reactive([]);
+    const sesion = useSesion();
     const administradores = admiStore.usuariosAdministradores;
     onMounted(async () => {
       if (!$q.screen.lt.sm && Boolean(administradores.length)) {
         ctx.emit("updateSelectedAdmi", administradores[0].id);
       }
       try {
-        const response = await api.get("top-admis");
+        const response = await api.get("top-admis", sesion.authorizacion);
         const tops = response.data.users;
         topAdmis.length = 0;
         tops.forEach((u) => {

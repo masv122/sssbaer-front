@@ -6,16 +6,13 @@ const sesion = useSesion();
 export const useAdmiStore = defineStore("admiStore", {
   state: () => ({
     solicitudes: [],
+    misSolicitudes: [],
     globalNotis: 0,
     admiNotis: 0,
     usuarios: [],
     solicitudesEnProcesoOCompletadas: [],
   }),
   getters: {
-    misSolicitudes: (state) =>
-      state.solicitudes.filter(
-        (solicitud) => solicitud.idAdministrador == sesion.data.user.id
-      ),
     usuariosTrabajadores: (state) =>
       state.usuarios.filter((user) => user.admi === 0),
     usuariosAdministradores: (state) =>
@@ -43,9 +40,21 @@ export const useAdmiStore = defineStore("admiStore", {
         if (!solicitud.terminado) this.solicitudes.push(solicitud);
       });
     },
+    async cargarMisSolicitudes() {
+      this.misSolicitudes.length = 0;
+      const response = await api.post(
+        "/solicitudes-admi",
+        { id: sesion.data.user.id },
+        sesion.authorizacion
+      );
+      const solicitudesResponse = response.data.solicitudes;
+      solicitudesResponse.forEach((solicitud) => {
+        this.misSolicitudes.push(solicitud);
+      });
+    },
     async cargarTodasLasSolicitudes() {
       this.solicitudes.length = 0;
-      const response = await api.get("/solicitudes");
+      const response = await api.get("/solicitudes", sesion.authorizacion);
       const solicitudesResponse = response.data.solicitudes;
       solicitudesResponse.forEach((solicitud) => {
         this.solicitudes.push(solicitud);
@@ -53,7 +62,10 @@ export const useAdmiStore = defineStore("admiStore", {
     },
     async cargarSolicitudesEnProcesoOCompletadas() {
       this.solicitudesEnProcesoOCompletadas.length = 0;
-      const response = await api.get("/solicitudes-supervisor");
+      const response = await api.get(
+        "/solicitudes-supervisor",
+        sesion.authorizacion
+      );
       const solicitudesResponse = response.data.solicitudes;
       solicitudesResponse.forEach((solicitud) => {
         this.solicitudesEnProcesoOCompletadas.push(solicitud);

@@ -96,6 +96,8 @@ export default {
           message:
             "Error al cerrar la sesion, consulte la consola para mas informacion",
         });
+      } finally {
+        router.push({ name: "ingreso" });
       }
     };
     return {

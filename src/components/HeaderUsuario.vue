@@ -43,6 +43,8 @@ export default {
         }
       } catch (error) {
         console.log(error);
+      } finally {
+        router.push({ name: "ingreso" });
       }
     };
     return {

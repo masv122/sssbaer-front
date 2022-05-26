@@ -14,10 +14,22 @@
           />
           <q-breadcrumbs-el
             icon="check_circle"
-            :class="data.row.terminado ? 'text-green' : ''"
+            :class="
+              data.row.terminado && !data.row.confirmada ? 'text-green' : ''
+            "
           />
-          <q-breadcrumbs-el icon="verified" />
+          <q-breadcrumbs-el
+            icon="verified"
+            :class="data.row.confirmada ? 'text-green' : ''"
+          />
         </q-breadcrumbs>
+        <q-btn
+          color="green"
+          label="Confrimar"
+          v-show="data.row.terminado && !data.row.confirmada"
+          checked-icon="check"
+          @click="confirmarSolicitud(data.row)"
+        />
         <q-badge color="negative"> ID: {{ data.row.id }} </q-badge>
       </q-card-section>
       <q-separator />
@@ -36,6 +48,14 @@
         :id="data.row.idAdministrador"
         v-show="data.row.enProceso || data.row.terminado"
       />
+      <q-card-actions
+        v-show="data.row.razonCancelado && !data.row.idAdministrador"
+      >
+        <div class="q-ml-xs">
+          La solicitud ha sido cancelada, Razon:
+          {{ data.row.razonCancelado }}
+        </div>
+      </q-card-actions>
     </q-card>
   </div>
 </template>
@@ -45,6 +65,8 @@ import { onMounted } from "@vue/runtime-core";
 import { apiEvents } from "src/boot/pusher";
 import AdministradorComp from "components/AdministradorComp.vue";
 import { useQuasar } from "quasar";
+import { api } from "src/boot/axios";
+import { useSesion } from "src/stores/sesion";
 export default {
   components: { AdministradorComp },
   name: "SolicitudItem",
@@ -54,18 +76,20 @@ export default {
   emits: ["updateSolicitud"],
   setup(props, ctx) {
     const $q = useQuasar();
+    const sesion = useSesion();
     onMounted(() => {
       try {
         apiEvents.Echo.private(`solicitudes.${props.data.row.id}`).listen(
           "SolicitudUsuarioActualizada",
           (e) => {
             ctx.emit("updateSolicitud", e.solicitud);
-            $q.notify({
-              color: "info",
-              icon: "info",
-              message: `Solicitud con ID: ${e.solicitud.id} con problema de ${e.solicitud.problema} ha actualizado su status`,
-              position: "top-right",
-            });
+            if (!e.solicitud.confirmada)
+              $q.notify({
+                color: "info",
+                icon: "info",
+                message: `Solicitud con ID: ${e.solicitud.id} con problema de ${e.solicitud.problema} ha actualizado su status`,
+                position: "top-right",
+              });
           }
         );
       } catch (error) {
@@ -77,7 +101,29 @@ export default {
         });
       }
     });
-    return {};
+    const confirmarSolicitud = async (solicitud) => {
+      try {
+        solicitud.confirmada = true;
+        const response = await api.put(
+          `/solicitudes/${solicitud.id}`,
+          solicitud,
+          sesion.authorizacion
+        );
+        if (response.data.message === "Update successfully")
+          $q.notify({
+            type: "positive",
+            message: `Solicitud con ID: ${response.data.solicitud.id} marcada como confirmada`,
+          });
+      } catch (error) {
+        console.log(error);
+        $q.notify({
+          type: "negative",
+          message:
+            "Error al confirmar la solicitud, revise la consola para mas informacion",
+        });
+      }
+    };
+    return { confirmarSolicitud };
   },
 };
 </script>

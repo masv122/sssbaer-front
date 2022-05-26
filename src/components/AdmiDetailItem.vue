@@ -15,7 +15,7 @@
 import { defineComponent } from "vue";
 
 export default defineComponent({
-  name: "ContactDetailItem",
+  name: "AdmiDetailItem",
   props: ["icon", "text_color", "value", "label"],
 });
 </script>

@@ -1,10 +1,5 @@
 <template>
-  <q-card
-    class="bg-blue-grey-1"
-    flat
-    bordered
-    style="width: 400px; height: 420px"
-  >
+  <q-card flat bordered style="width: 400px; height: 420px">
     <q-card-section class="q-pt-none">
       <div class="q-pa-md">
         <q-form @submit.prevent.stop="onSubmit" class="q-gutter-sm">
@@ -97,23 +92,37 @@ export default {
       esVisible,
       recordar,
       async onSubmit() {
-        if (refcorreo.value.hasError || refContraseña.value.hasError) {
-          $q.notify({
-            color: "negative",
-            message: "Complete los datos",
-          });
-        } else {
-          const result = await sesion.login(correo.value, contraseña.value);
-          if (result) {
-            if (recordar.value) $q.cookies.set("token", sesion.data.token);
-            else $q.cookies.remove("token");
-            if (sesion.data.user.admi) router.push({ name: "administrador" });
-            else router.push({ name: "usuario" });
-          } else
+        try {
+          if (refcorreo.value.hasError || refContraseña.value.hasError) {
             $q.notify({
-              type: "warning",
-              message: "Usuario/Contraseña invalidas",
+              color: "negative",
+              message: "Complete los datos",
             });
+          } else {
+            const result = await sesion.login(correo.value, contraseña.value);
+            if (result) {
+              if (recordar.value)
+                $q.cookies.set("token", sesion.data.token, {
+                  sameSite: "Lax",
+                });
+              else $q.cookies.remove("token");
+              if (
+                !Boolean(sesion.data.user.admi) &&
+                !Boolean(sesion.data.user.supervisor)
+              )
+                router.push({ name: "usuario" });
+              else if (Boolean(sesion.data.user.admi))
+                router.push({ name: "administrador" });
+              else if (Boolean(sesion.data.user.supervisor))
+                router.push({ name: "supervisor" });
+            } else
+              $q.notify({
+                type: "warning",
+                message: "Usuario/Contraseña invalidas",
+              });
+          }
+        } catch (error) {
+          console.log(error);
         }
       },
     };

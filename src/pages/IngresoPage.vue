@@ -1,11 +1,14 @@
 <template>
-  <q-page padding class="row justify-around q-pt-xl">
-    <login-comp />
+  <q-page
+    padding
+    class="fit column wrap justify-start items-center content-center bg-blue-grey-1"
+  >
     <img
       src="https://pbs.twimg.com/media/B33SGbYIMAAhrVR.png"
-      style="width: 500px; height: 300px"
-      v-if="$q.screen.gt.sm"
+      style="width: 200px; height: 100px"
+      class="q-mb-lg"
     />
+    <login-comp />
   </q-page>
 </template>
 

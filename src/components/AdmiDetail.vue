@@ -25,12 +25,12 @@
     <q-separator></q-separator>
 
     <div v-for="(stat, statIndex) in admiStats.stats" :key="statIndex">
-      <contact-detail-item
+      <admi-detail-item
         :icon="stat.icon"
         :text_color="stat.text_color"
         :value="stat.field"
         :label="stat.label"
-      ></contact-detail-item>
+      />
 
       <q-separator
         inset="item"
@@ -42,23 +42,28 @@
 
 <script>
 import { reactive, ref } from "@vue/reactivity";
-import ContactDetailItem from "./ContactDetailItem.vue";
+import AdmiDetailItem from "./AdmiDetailItem.vue";
 import { computed, watch } from "@vue/runtime-core";
 import { useAdmiStore } from "src/stores/admiStore";
 import { api } from "src/boot/axios";
+import { useSesion } from "src/stores/sesion";
 export default {
-  components: { ContactDetailItem },
+  components: { AdmiDetailItem },
   name: "AdmiDetail",
   props: { id: { type: Number, default: null } },
   setup(props) {
     const admiStore = useAdmiStore();
-
+    const sesion = useSesion();
     const admi = computed(() =>
       props.id ? admiStore.getUserById(props.id) : { name: "", id: "" }
     );
     watch(admi, async (newVal) => {
       try {
-        const response = await api.post("/solicitudes-admi", { id: newVal.id });
+        const response = await api.post(
+          "/solicitudes-admi",
+          { id: newVal.id },
+          sesion.authorizacion
+        );
         const solicitudes = response.data.solicitudes;
         const mes = new Date(Date.now()).toLocaleString("default", {
           month: "short",

@@ -13,7 +13,7 @@
 </template>
 
 <script>
-import { computed, onBeforeMount, onMounted, ref } from "vue";
+import { ref } from "vue";
 import { useSesion } from "stores/sesion";
 import { useRouter } from "vue-router";
 import HeaderAdmi from "src/components/HeaderAdmi.vue";

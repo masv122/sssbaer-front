@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-center">
-    <q-card class="bg-blue-grey-1" style="width: 600px; height: 420px">
+    <q-card style="width: 500px; height: 420px">
       <q-card-section class="q-pt-none">
         <div class="q-pa-md">
           <q-form @submit="onSubmit" @reset="onReset">

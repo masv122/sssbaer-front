@@ -26,7 +26,7 @@
 
 <script>
 export default {
-  name: "ContactItem",
+  name: "AdmiItem",
   props: ["name", "id", "top"],
   setup() {
     return {

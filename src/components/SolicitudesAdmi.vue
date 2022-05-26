@@ -22,91 +22,23 @@
     </template>
 
     <template v-slot:item="props">
-      <div
-        class="q-pa-xs col-xs-12 col-sm-6 col-md-4 col-lg-3 grid-style-transition"
-        :style="props.selected ? 'transform: scale(0.95);' : ''"
-      >
-        <q-card :class="props.selected ? 'bg-grey-2' : ''">
-          <q-card-section
-            v-if="
-              (!!props.row.idAdministrador &&
-                props.row.idAdministrador != sesion.data.user.id) ||
-              supervisor
-            "
-          >
-            <q-breadcrumbs class="text-grey">
-              <template v-slot:separator>
-                <q-icon size="1.5em" name="chevron_right" color="negative" />
-              </template>
-              <q-breadcrumbs-el
-                icon="hourglass_empty"
-                :class="!!props.row.enProceso ? 'text-negative' : ''"
-              />
-              <q-breadcrumbs-el
-                icon="check_circle"
-                :class="!!props.row.terminado ? 'text-negative' : ''"
-              />
-              <q-breadcrumbs-el icon="verified" />
-            </q-breadcrumbs>
-          </q-card-section>
-          <q-card-actions align="right" v-else>
-            <q-btn
-              :outline="!!props.row.enProceso"
-              :color="!!props.row.enProceso ? 'negative' : 'primary'"
-              :label="!!props.row.enProceso ? 'rechazar' : 'Aceptar'"
-              v-show="
-                (!!!props.row.enProceso && !!!props.row.terminado) ||
-                (props.row.enProceso && !!!props.row.terminado)
-              "
-              @click="
-                props.row.enProceso = !!!props.row.enProceso;
-                admiStore.cambiarProceso(props.row);
-              "
-            />
-            <q-btn
-              color="green"
-              label="Completar"
-              v-show="!!props.row.enProceso || !!props.row.terminado"
-              v-model="props.row.terminado"
-              checked-icon="check"
-              :disable="!!props.row.terminado"
-              unchecked-icon="clear"
-              @click="
-                props.row.enProceso = !!!props.row.enProceso;
-                props.row.terminado = !!!props.row.terminado;
-                admiStore.cambiarProceso(props.row);
-              "
-            />
-          </q-card-actions>
-          <q-separator />
-          <q-list dense>
-            <q-item v-for="col in props.cols" :key="col.name">
-              <q-item-section>
-                <q-item-label>{{ col.label }}</q-item-label>
-              </q-item-section>
-              <q-item-section side>
-                <q-item-label caption>{{ col.value }}</q-item-label>
-              </q-item-section>
-            </q-item>
-          </q-list>
-          <q-separator />
-          <administrador-comp
-            :id="props.row.idAdministrador"
-            v-show="!!props.row.enProceso"
-          />
-        </q-card>
-      </div>
+      <solicitud-item-admi
+        :data="props"
+        :supervisor="supervisor"
+        @cambiarProceso="cambiarProceso"
+        @completarSolicitud="completarSolicitud"
+      />
     </template>
   </q-table>
 </template>
 
 <script>
-import { onMounted, reactive } from "@vue/runtime-core";
+import { onMounted } from "@vue/runtime-core";
 import { useSesion } from "src/stores/sesion";
-import AdministradorComp from "components/AdministradorComp.vue";
 import { useAdmiStore } from "src/stores/admiStore";
 import { apiEvents } from "src/boot/pusher";
 import { useQuasar } from "quasar";
+import SolicitudItemAdmi from "./SolicitudItemAdmi.vue";
 const columns = [
   { name: "id", label: "ID", field: "id" },
   { name: "coordinacion", label: "Coordinacion", field: "coordinacion" },
@@ -125,7 +57,7 @@ const columns = [
 
 export default {
   components: {
-    AdministradorComp,
+    SolicitudItemAdmi,
   },
   props: {
     supervisor: {
@@ -137,6 +69,53 @@ export default {
     const sesion = useSesion();
     const $q = useQuasar();
     const admiStore = useAdmiStore();
+    const cambiarProceso = (solicitud, key) => {
+      solicitud.enProceso = !!!solicitud.enProceso;
+      if (solicitud.enProceso) admiStore.cambiarProceso(solicitud);
+      else
+        $q.dialog({
+          title: "Has cancelado una solicitud",
+          message: "¿Porque cancelaste la solicitud?",
+          prompt: {
+            model: "",
+            isValid: (val) => val.length > 2,
+            type: "text",
+          },
+          cancel: true,
+          persistent: true,
+        })
+          .onOk((data) => {
+            solicitud.razonCancelado = data;
+            admiStore.cambiarProceso(solicitud);
+          })
+          .onCancel(() => {
+            admiStore.solicitudes[key].enProceso = !!!solicitud.enProceso;
+          });
+    };
+    const completarSolicitud = (solicitud, key) => {
+      solicitud.enProceso = !!!solicitud.enProceso;
+      solicitud.terminado = !!!solicitud.terminado;
+      if (solicitud.terminado)
+        $q.dialog({
+          title: "Completar solicitud",
+          message: "Indica tus observaciones",
+          prompt: {
+            model: "",
+            isValid: (val) => val.length > 2,
+            type: "text",
+          },
+          cancel: true,
+          persistent: true,
+        })
+          .onOk((data) => {
+            solicitud.observacionesAlCompletar = data;
+            admiStore.cambiarProceso(solicitud);
+          })
+          .onCancel(() => {
+            admiStore.solicitudes[key].enProceso = !!!solicitud.enProceso;
+            admiStore.solicitudes[key].terminado = !!!solicitud.terminado;
+          });
+    };
     onMounted(async () => {
       if (props.supervisor) await admiStore.cargarTodasLasSolicitudes();
       else await admiStore.cargarSolicitudes();
@@ -161,11 +140,13 @@ export default {
               (s) => s.id == e.solicitud.id
             );
             admiStore.solicitudes[index] = e.solicitud;
-            $q.notify({
-              color: "info",
-              icon: "info",
-              message: `Solicitud con ID: ${e.solicitud.id} con problema de ${e.solicitud.problema} ha actualizado su status`,
-            });
+            if (e.solicitud.idAdministrador != sesion.data.user.id) {
+              $q.notify({
+                color: "info",
+                icon: "info",
+                message: `Solicitud con ID: ${e.solicitud.id} con problema de ${e.solicitud.problema} ha actualizado su status`,
+              });
+            }
           }
         );
       } catch (error) {
@@ -181,6 +162,8 @@ export default {
       sesion,
       columns,
       admiStore,
+      cambiarProceso,
+      completarSolicitud,
     };
   },
 };

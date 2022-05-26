@@ -1,4 +1,12 @@
 <template>
+  <q-banner rounded class="bg-grey-3" v-show="sinConfirmar > 0">
+    <template v-slot:avatar>
+      <q-icon name="contact_support" color="primary" />
+    </template>
+    Tiene solicitudes sin confirmar, si fue atendido(a) correctamente porfavor
+    confirmelas, Esto ayuda a la coordinacion de TIC ha contabilizar mejor su
+    trabajo.
+  </q-banner>
   <q-table
     title="Mis solicitudes"
     :rows="solicitudes"
@@ -55,7 +63,7 @@
 </template>
 
 <script>
-import { onMounted, reactive, ref } from "@vue/runtime-core";
+import { computed, onMounted, reactive, ref } from "@vue/runtime-core";
 import { useSesion } from "stores/sesion";
 import { api } from "src/boot/axios";
 import SolicitudItem from "components/SolicitudItem.vue";
@@ -82,6 +90,12 @@ export default {
     const todas = ref(true);
     const usuario = sesion.data.user;
     const solicitudes = reactive([]);
+    const sinConfirmar = computed(
+      () =>
+        solicitudes.filter(
+          (s) => Boolean(s.terminado) && !Boolean(s.confirmada)
+        ).length
+    );
     const cargarSolicitudes = async () => {
       solicitudes.length = 0;
       const response = await api.post(
@@ -120,6 +134,7 @@ export default {
       enEspera,
       completadas,
       todas,
+      sinConfirmar,
     };
   },
 };
