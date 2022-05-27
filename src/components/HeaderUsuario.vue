@@ -3,7 +3,6 @@
     <img src="~assets/banner_oficial.png" class="banner" />
 
     <q-toolbar class="bg-white text-negative">
-      <q-icon name="flight_takeoff" size="3em" />
       <q-btn
         v-show="$q.screen.width < 1000"
         @click="$emit('changeDrawer')"
@@ -12,6 +11,7 @@
         dense
         icon="menu"
       />
+      <q-icon name="flight_takeoff" size="3em" />
       <q-space />
       <q-btn flat @click="cerrarSesion()" round dense icon="logout" />
     </q-toolbar>

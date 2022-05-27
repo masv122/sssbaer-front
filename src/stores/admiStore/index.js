@@ -7,7 +7,8 @@ export const useAdmiStore = defineStore("admiStore", {
   state: () => ({
     solicitudes: [],
     misSolicitudes: [],
-    globalNotis: 0,
+    globalNotis: [],
+    notisSinLeer: 0,
     admiNotis: 0,
     usuarios: [],
     solicitudesEnProcesoOCompletadas: [],
@@ -33,62 +34,87 @@ export const useAdmiStore = defineStore("admiStore", {
   },
   actions: {
     async cargarSolicitudes() {
-      this.solicitudes.length = 0;
-      const response = await api.get("/solicitudes", sesion.authorizacion);
-      const solicitudesResponse = response.data.solicitudes;
-      solicitudesResponse.forEach((solicitud) => {
-        if (!solicitud.terminado) this.solicitudes.push(solicitud);
-      });
+      try {
+        this.solicitudes.length = 0;
+        const response = await api.get("/solicitudes", sesion.authorizacion);
+        const solicitudesResponse = response.data.solicitudes;
+        solicitudesResponse.forEach((solicitud) => {
+          if (!solicitud.terminado) this.solicitudes.push(solicitud);
+        });
+      } catch (error) {
+        console.log(error);
+      }
     },
     async cargarMisSolicitudes() {
-      this.misSolicitudes.length = 0;
-      const response = await api.post(
-        "/solicitudes-admi",
-        { id: sesion.data.user.id },
-        sesion.authorizacion
-      );
-      const solicitudesResponse = response.data.solicitudes;
-      solicitudesResponse.forEach((solicitud) => {
-        this.misSolicitudes.push(solicitud);
-      });
+      try {
+        this.misSolicitudes.length = 0;
+        const response = await api.post(
+          "/solicitudes-admi",
+          { id: sesion.data.user.id },
+          sesion.authorizacion
+        );
+        const solicitudesResponse = response.data.solicitudes;
+        solicitudesResponse.forEach((solicitud) => {
+          this.misSolicitudes.push(solicitud);
+        });
+      } catch (error) {
+        console.log(error);
+      }
     },
     async cargarTodasLasSolicitudes() {
-      this.solicitudes.length = 0;
-      const response = await api.get("/solicitudes", sesion.authorizacion);
-      const solicitudesResponse = response.data.solicitudes;
-      solicitudesResponse.forEach((solicitud) => {
-        this.solicitudes.push(solicitud);
-      });
+      try {
+        this.solicitudes.length = 0;
+        const response = await api.get("/solicitudes", sesion.authorizacion);
+        const solicitudesResponse = response.data.solicitudes;
+        solicitudesResponse.forEach((solicitud) => {
+          this.solicitudes.push(solicitud);
+        });
+      } catch (error) {
+        console.log(error);
+      }
     },
     async cargarSolicitudesEnProcesoOCompletadas() {
-      this.solicitudesEnProcesoOCompletadas.length = 0;
-      const response = await api.get(
-        "/solicitudes-supervisor",
-        sesion.authorizacion
-      );
-      const solicitudesResponse = response.data.solicitudes;
-      solicitudesResponse.forEach((solicitud) => {
-        this.solicitudesEnProcesoOCompletadas.push(solicitud);
-      });
+      try {
+        this.solicitudesEnProcesoOCompletadas.length = 0;
+        const response = await api.get(
+          "/solicitudes-supervisor",
+          sesion.authorizacion
+        );
+        const solicitudesResponse = response.data.solicitudes;
+        solicitudesResponse.forEach((solicitud) => {
+          this.solicitudesEnProcesoOCompletadas.push(solicitud);
+        });
+      } catch (error) {
+        console.log(error);
+      }
     },
     async cargarUsuarios() {
-      this.usuarios.length = 0;
-      const response = await api.get("/users", sesion.authorizacion);
-      const userData = response.data.users;
-      userData.forEach((user) => {
-        this.usuarios.push(user);
-      });
+      try {
+        this.usuarios.length = 0;
+        const response = await api.get("/users", sesion.authorizacion);
+        const userData = response.data.users;
+        userData.forEach((user) => {
+          this.usuarios.push(user);
+        });
+      } catch (error) {
+        console.log(error);
+      }
     },
 
     async cambiarProceso(solicitud) {
-      if (solicitud.enProceso) solicitud.idAdministrador = sesion.data.user.id;
-      if (!solicitud.terminado && !solicitud.enProceso)
-        solicitud.idAdministrador = "";
-      await api.put(
-        `/solicitudes/${solicitud.id}`,
-        solicitud,
-        sesion.authorizacion
-      );
+      try {
+        if (solicitud.enProceso)
+          solicitud.idAdministrador = sesion.data.user.id;
+        if (!solicitud.terminado && !solicitud.enProceso)
+          solicitud.idAdministrador = "";
+        await api.put(
+          `/solicitudes/${solicitud.id}`,
+          solicitud,
+          sesion.authorizacion
+        );
+      } catch (error) {
+        console.log(error);
+      }
     },
 
     async getAdmi(id) {

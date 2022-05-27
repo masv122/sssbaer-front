@@ -10,6 +10,7 @@
 <script>
 import { onMounted, reactive, watch } from "@vue/runtime-core";
 import { useAdmiStore } from "src/stores/admiStore";
+import { useQuasar } from "quasar";
 export default {
   name: "AdministradorComp",
   props: {
@@ -17,20 +18,39 @@ export default {
   },
   setup(props) {
     const administrador = reactive({ data: null });
+    const $q = useQuasar();
     const admiStore = useAdmiStore();
     onMounted(async () => {
       if (props.id) {
-        const response = await admiStore.getAdmi(props.id);
-        administrador.data = response.data[0];
+        try {
+          const response = await admiStore.getAdmi(props.id);
+          administrador.data = response.data[0];
+        } catch (error) {
+          console.log(error);
+          $q.notify({
+            color: "negative",
+            message:
+              "ha ocurrido un error al buscar el administrador, para mas informacion consulte la consola",
+          });
+        }
       }
     });
     watch(
       () => props.id,
       async () => {
-        if (props.id) {
-          const response = await admiStore.getAdmi(props.id);
-          administrador.data = response.data[0];
-        } else administrador.data = null;
+        try {
+          if (props.id) {
+            const response = await admiStore.getAdmi(props.id);
+            administrador.data = response.data[0];
+          } else administrador.data = null;
+        } catch (error) {
+          console.log(error);
+          $q.notify({
+            color: "negative",
+            message:
+              "ha ocurrido un error al buscar el administrador, para mas informacion consulte la consola",
+          });
+        }
       }
     );
     return {

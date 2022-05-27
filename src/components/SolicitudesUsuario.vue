@@ -67,6 +67,7 @@ import { computed, onMounted, reactive, ref } from "@vue/runtime-core";
 import { useSesion } from "stores/sesion";
 import { api } from "src/boot/axios";
 import SolicitudItem from "components/SolicitudItem.vue";
+import { useQuasar } from "quasar";
 const columns = [
   { name: "coordinacion", label: "Coordinacion", field: "coordinacion" },
   { name: "problema", label: "Tipo de problema", field: "problema" },
@@ -88,6 +89,7 @@ export default {
     const enEspera = ref(false);
     const completadas = ref(false);
     const todas = ref(true);
+    const $q = useQuasar();
     const usuario = sesion.data.user;
     const solicitudes = reactive([]);
     const sinConfirmar = computed(
@@ -97,26 +99,40 @@ export default {
         ).length
     );
     const cargarSolicitudes = async () => {
-      solicitudes.length = 0;
-      const response = await api.post(
-        "/solicitudes-usuario",
-        {
-          id: usuario.id,
-        },
-        sesion.authorizacion
-      );
-      const solicitudesResponse = response.data.solicitudes;
-      solicitudesResponse.forEach((solicitud) => {
-        if (todas.value) solicitudes.push(solicitud);
-        else {
-          if (sinAtender.value && !solicitud.enProceso && !solicitud.terminado)
-            solicitudes.push(solicitud);
-          if (enEspera.value && solicitud.enProceso && !solicitud.terminado)
-            solicitudes.push(solicitud);
-          if (completadas.value && solicitud.terminado)
-            solicitudes.push(solicitud);
-        }
-      });
+      try {
+        solicitudes.length = 0;
+        const response = await api.post(
+          "/solicitudes-usuario",
+          {
+            id: usuario.id,
+          },
+          sesion.authorizacion
+        );
+        const solicitudesResponse = response.data.solicitudes;
+        solicitudesResponse.forEach((solicitud) => {
+          if (todas.value) solicitudes.push(solicitud);
+          else {
+            if (
+              sinAtender.value &&
+              !solicitud.enProceso &&
+              !solicitud.terminado
+            )
+              solicitudes.push(solicitud);
+            if (enEspera.value && solicitud.enProceso && !solicitud.terminado)
+              solicitudes.push(solicitud);
+            if (completadas.value && solicitud.terminado)
+              solicitudes.push(solicitud);
+          }
+        });
+      } catch (error) {
+        console.log(error);
+        $q.notify({
+          color: "negative",
+          icon: "info",
+          message:
+            "error al cargar las solicitudes, para mas informacion consulte la consola",
+        });
+      }
     };
     const updateSolicitud = (solicitud) => {
       const index = solicitudes.findIndex((s) => s.id == solicitud.id);

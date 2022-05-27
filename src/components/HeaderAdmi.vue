@@ -31,23 +31,37 @@
         <q-btn
           round
           dense
-          @click="admiStore.globalNotis = 0"
           flat
           icon="notifications"
+          @click="admiStore.notisSinLeer = 0"
         >
           <q-badge
-            v-show="admiStore.globalNotis > 0"
             color="red"
             text-color="white"
             floating
+            v-show="admiStore.notisSinLeer > 0"
           >
-            {{ admiStore.globalNotis }}
+            {{ admiStore.notisSinLeer }}
           </q-badge>
-          <q-tooltip>{{
-            admiStore.globalNotis > 0
-              ? "Borrar notificaciones"
-              : "Notificaciones"
-          }}</q-tooltip>
+          <q-menu>
+            <q-list style="min-width: 100px">
+              <notis-comp />
+              <q-card class="text-center no-shadow no-border">
+                <q-btn
+                  label="limpiar"
+                  style="max-width: 120px !important"
+                  flat
+                  dense
+                  class="text-indigo-8"
+                  v-if="admiStore.globalNotis.length > 0"
+                  @click="admiStore.globalNotis.length = 0"
+                />
+                <q-banner v-else rounded class="bg-grey-3">
+                  No hay notificaciones
+                </q-banner>
+              </q-card>
+            </q-list>
+          </q-menu>
         </q-btn>
         <q-btn round dense flat @click="cerrarSesion()">
           <q-icon name="logout" />
@@ -59,12 +73,15 @@
 </template>
 
 <script>
-import { ref } from "@vue/reactivity";
 import { useRouter } from "vue-router";
 import { useQuasar } from "quasar";
 import { useSesion } from "src/stores/sesion";
 import { useAdmiStore } from "src/stores/admiStore";
+import NotisComp from "./NotisComp.vue";
+import { onMounted } from "@vue/runtime-core";
+import { apiEvents } from "src/boot/pusher";
 export default {
+  components: { NotisComp },
   name: "HeaderAdmi",
   props: {
     nombre: {
@@ -100,6 +117,55 @@ export default {
         router.push({ name: "ingreso" });
       }
     };
+    const addNoti = (noti) => {
+      admiStore.globalNotis.unshift(noti);
+      admiStore.notisSinLeer++;
+    };
+    onMounted(() => {
+      try {
+        apiEvents.Echo.channel("SolicitudEnviada").listen(
+          "SolicitudEnviada",
+          (e) => {
+            addNoti(e);
+            console.log(e);
+            e.solicitud.name = e.user.name;
+            admiStore.solicitudes.push(e.solicitud);
+            $q.notify({
+              message: `${e.user.name} ha enviado una nueva solicitud.`,
+              icon: "announcement",
+              position: "top-right",
+              color: "positive",
+            });
+          }
+        );
+        apiEvents.Echo.channel("EstadoActualizado").listen(
+          "EstadoActualizado",
+          (e) => {
+            addNoti(e);
+            const index = admiStore.solicitudes.findIndex(
+              (s) => s.id == e.solicitud.id
+            );
+            admiStore.solicitudes[index] = e.solicitud;
+            if (e.solicitud.idAdministrador != sesion.data.user.id) {
+              $q.notify({
+                color: "info",
+                icon: "info",
+                position: "top-right",
+                message: `${e.user.name} ha ${e.tipo} una solicitud.`,
+              });
+            }
+          }
+        );
+      } catch (error) {
+        console.log(error);
+        $q.notify({
+          color: "negative",
+          icon: "info",
+          message:
+            "No se ha podido conectar al servidor de websockets, consulte la consola para mas informacion",
+        });
+      }
+    });
     return {
       cerrarSesion,
       admiStore,

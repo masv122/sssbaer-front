@@ -43,19 +43,44 @@
                 (props.row.enProceso && !!!props.row.terminado)
               "
               @click="cambiarProceso(props.row, props.rowIndex)"
-            />
+            >
+              <q-tooltip> Cancelar solicitud </q-tooltip></q-btn
+            >
             <q-btn
               flat
               round
               color="green"
               icon="check"
-              v-show="!!props.row.enProceso || !!props.row.terminado"
+              v-show="!!props.row.enProceso"
               v-model="props.row.terminado"
               checked-icon="check"
               :disable="!!props.row.terminado"
               unchecked-icon="clear"
               @click="completarSolicitud(props.row, props.rowIndex)"
-            />
+            >
+              <q-tooltip> Completar solicitud </q-tooltip></q-btn
+            >
+            <q-icon
+              name="check_circle_outline"
+              color="positive"
+              size="2em"
+              v-show="
+                Boolean(props.row.terminado) && !Boolean(props.row.confirmada)
+              "
+            >
+              <q-tooltip> La solicitud ha sido completada </q-tooltip></q-icon
+            >
+            <q-icon
+              name="verified"
+              color="positive"
+              size="2em"
+              v-show="Boolean(props.row.confirmada)"
+            >
+              <q-tooltip>
+                La solicitud fue marcada como completada por el usuario que la
+                envio
+              </q-tooltip></q-icon
+            >
           </q-td>
 
           <q-td v-for="col in props.cols" :key="col.name" :props="props">

@@ -94,6 +94,11 @@ export default {
         });
       } catch (error) {
         console.log(error);
+        $q.notify({
+          color: "negative",
+          message:
+            "ha ocurrido un error al traer la lista de administradores, para mas informacion consulte la consola",
+        });
       }
     });
     return {

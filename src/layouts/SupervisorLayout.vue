@@ -9,12 +9,13 @@
 </template>
 
 <script>
-import Messages from "components/MessagesComp.vue";
+import Messages from "src/components/NotisComp.vue";
 
 import { onMounted, ref } from "vue";
 import { useAdmiStore } from "src/stores/admiStore";
 import HeaderSupervisor from "src/components/HeaderSupervisor.vue";
 import MenuSupervisor from "src/components/MenuSupervisor.vue";
+import { useQuasar } from "quasar";
 
 export default {
   name: "MainLayout",
@@ -25,10 +26,21 @@ export default {
   setup() {
     const drawer = ref(false);
     const admiStore = useAdmiStore();
+    const $q = useQuasar();
     const iniciarTodaLaData = async () => {
-      await admiStore.cargarUsuarios();
-      await admiStore.cargarTodasLasSolicitudes();
-      await admiStore.cargarSolicitudesEnProcesoOCompletadas();
+      try {
+        await admiStore.cargarUsuarios();
+        await admiStore.cargarTodasLasSolicitudes();
+        await admiStore.cargarSolicitudesEnProcesoOCompletadas();
+      } catch (error) {
+        console.log(error);
+        $q.notify({
+          color: "negative",
+          icon: "info",
+          message:
+            "error al cargar los usuarios/solicitudes, para mas informacion consulte la consola",
+        });
+      }
     };
 
     onMounted(() => {

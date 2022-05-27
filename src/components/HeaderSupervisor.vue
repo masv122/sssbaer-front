@@ -16,7 +16,7 @@
           <q-badge color="red" text-color="white" floating> 5 </q-badge>
           <q-menu>
             <q-list style="min-width: 100px">
-              <messages></messages>
+              <notis-comp />
               <q-card class="text-center no-shadow no-border">
                 <q-btn
                   label="View All"
@@ -44,13 +44,13 @@
 </template>
 
 <script>
-import Messages from "components/MessagesComp.vue";
+import NotisComp from "components/NotisComp.vue";
 import { useSesion } from "src/stores/sesion";
 import { useRouter } from "vue-router";
 export default {
   name: "HeaderSupervisor",
   components: {
-    Messages,
+    NotisComp,
   },
 
   setup() {

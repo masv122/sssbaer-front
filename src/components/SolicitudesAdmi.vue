@@ -69,92 +69,84 @@ export default {
     const sesion = useSesion();
     const $q = useQuasar();
     const admiStore = useAdmiStore();
-    const cambiarProceso = (solicitud, key) => {
-      solicitud.enProceso = !!!solicitud.enProceso;
-      if (solicitud.enProceso) admiStore.cambiarProceso(solicitud);
-      else
-        $q.dialog({
-          title: "Has cancelado una solicitud",
-          message: "¿Porque cancelaste la solicitud?",
-          prompt: {
-            model: "",
-            isValid: (val) => val.length > 2,
-            type: "text",
-          },
-          cancel: true,
-          persistent: true,
-        })
-          .onOk((data) => {
-            solicitud.razonCancelado = data;
-            admiStore.cambiarProceso(solicitud);
+    const cambiarProceso = async (solicitud, key) => {
+      try {
+        solicitud.enProceso = !!!solicitud.enProceso;
+        if (solicitud.enProceso) {
+          solicitud.razonCancelado = null;
+          await admiStore.cambiarProceso(solicitud);
+        } else
+          $q.dialog({
+            title: "Has cancelado una solicitud",
+            message: "¿Porque cancelaste la solicitud?",
+            prompt: {
+              model: "",
+              isValid: (val) => val.length > 2,
+              type: "text",
+            },
+            cancel: true,
+            persistent: true,
           })
-          .onCancel(() => {
-            admiStore.solicitudes[key].enProceso = !!!solicitud.enProceso;
-          });
+            .onOk(async (data) => {
+              solicitud.razonCancelado = data;
+              await admiStore.cambiarProceso(solicitud);
+            })
+            .onCancel(() => {
+              admiStore.solicitudes[key].enProceso = !!!solicitud.enProceso;
+            });
+      } catch (error) {
+        console.log(error);
+        $q.notify({
+          color: "negative",
+          message:
+            "Error al cambiar el estado de la solicitud, consulte la consola para mas informacion",
+        });
+      }
     };
-    const completarSolicitud = (solicitud, key) => {
-      solicitud.enProceso = !!!solicitud.enProceso;
-      solicitud.terminado = !!!solicitud.terminado;
-      if (solicitud.terminado)
-        $q.dialog({
-          title: "Completar solicitud",
-          message: "Indica tus observaciones",
-          prompt: {
-            model: "",
-            isValid: (val) => val.length > 2,
-            type: "text",
-          },
-          cancel: true,
-          persistent: true,
-        })
-          .onOk((data) => {
-            solicitud.observacionesAlCompletar = data;
-            admiStore.cambiarProceso(solicitud);
+    const completarSolicitud = async (solicitud, key) => {
+      try {
+        solicitud.enProceso = !!!solicitud.enProceso;
+        solicitud.terminado = !!!solicitud.terminado;
+        if (solicitud.terminado)
+          $q.dialog({
+            title: "Completar solicitud",
+            message: "Indica tus observaciones",
+            prompt: {
+              model: "",
+              isValid: (val) => val.length > 2,
+              type: "text",
+            },
+            cancel: true,
+            persistent: true,
           })
-          .onCancel(() => {
-            admiStore.solicitudes[key].enProceso = !!!solicitud.enProceso;
-            admiStore.solicitudes[key].terminado = !!!solicitud.terminado;
-          });
+            .onOk(async (data) => {
+              solicitud.observacionesAlCompletar = data;
+              await admiStore.cambiarProceso(solicitud);
+            })
+            .onCancel(() => {
+              admiStore.solicitudes[key].enProceso = !!!solicitud.enProceso;
+              admiStore.solicitudes[key].terminado = !!!solicitud.terminado;
+            });
+      } catch (error) {
+        console.log(error);
+        $q.notify({
+          color: "negative",
+          message:
+            "Error al cambiar el estado de la solicitud, consulte la consola para mas informacion",
+        });
+      }
     };
     onMounted(async () => {
-      if (props.supervisor) await admiStore.cargarTodasLasSolicitudes();
-      else await admiStore.cargarSolicitudes();
       try {
-        apiEvents.Echo.channel("SolicitudEnviada").listen(
-          "SolicitudEnviada",
-          (e) => {
-            admiStore.solicitudes.push(e.solicitud);
-            admiStore.globalNotis++;
-            $q.notify({
-              message: `nueva solicitud con ID: ${e.solicitud.id} recibida.`,
-              icon: "announcement",
-              position: "top-right",
-              color: "teal",
-            });
-          }
-        );
-        apiEvents.Echo.channel("EstadoActualizado").listen(
-          "EstadoActualizado",
-          (e) => {
-            const index = admiStore.solicitudes.findIndex(
-              (s) => s.id == e.solicitud.id
-            );
-            admiStore.solicitudes[index] = e.solicitud;
-            if (e.solicitud.idAdministrador != sesion.data.user.id) {
-              $q.notify({
-                color: "info",
-                icon: "info",
-                message: `Solicitud con ID: ${e.solicitud.id} con problema de ${e.solicitud.problema} ha actualizado su status`,
-              });
-            }
-          }
-        );
+        if (props.supervisor) await admiStore.cargarTodasLasSolicitudes();
+        else await admiStore.cargarSolicitudes();
       } catch (error) {
         console.log(error);
         $q.notify({
           color: "negative",
           icon: "info",
-          message: "No se ha podido conectar al servidor de websockets",
+          message:
+            "No se ha podido cargar las solicitudes, consulte la consola para mas informacion",
         });
       }
     });

@@ -47,12 +47,14 @@ import { computed, watch } from "@vue/runtime-core";
 import { useAdmiStore } from "src/stores/admiStore";
 import { api } from "src/boot/axios";
 import { useSesion } from "src/stores/sesion";
+import { useQuasar } from "quasar";
 export default {
   components: { AdmiDetailItem },
   name: "AdmiDetail",
   props: { id: { type: Number, default: null } },
   setup(props) {
     const admiStore = useAdmiStore();
+    const $q = useQuasar();
     const sesion = useSesion();
     const admi = computed(() =>
       props.id ? admiStore.getUserById(props.id) : { name: "", id: "" }
@@ -133,6 +135,11 @@ export default {
         ];
       } catch (error) {
         console.log(error);
+        $q.notify({
+          color: "negative",
+          message:
+            "Ha ocurrido un error al traer la informacion del administrador, para mas informacion consulta la consola",
+        });
       }
     });
     const admiStats = reactive({
