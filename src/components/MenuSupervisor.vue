@@ -3,6 +3,7 @@
     v-model="drawerModel"
     show-if-above
     bordered
+    :width="200"
     class="bg-grey-10 text-white"
   >
     <q-list>

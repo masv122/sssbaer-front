@@ -28,13 +28,7 @@
         <q-btn round dense flat icon="person">
           <q-tooltip>{{ nombre }}</q-tooltip>
         </q-btn>
-        <q-btn
-          round
-          dense
-          flat
-          icon="notifications"
-          @click="admiStore.notisSinLeer = 0"
-        >
+        <q-btn round dense flat icon="notifications" @click="readNotis">
           <q-badge
             color="red"
             text-color="white"
@@ -54,7 +48,7 @@
                   dense
                   class="text-indigo-8"
                   v-if="admiStore.globalNotis.length > 0"
-                  @click="admiStore.globalNotis.length = 0"
+                  @click="deleteNotis"
                 />
                 <q-banner v-else rounded class="bg-grey-3">
                   No hay notificaciones
@@ -80,6 +74,7 @@ import { useAdmiStore } from "src/stores/admiStore";
 import NotisComp from "./NotisComp.vue";
 import { onMounted } from "@vue/runtime-core";
 import { apiEvents } from "src/boot/pusher";
+import { api } from "src/boot/axios";
 export default {
   components: { NotisComp },
   name: "HeaderAdmi",
@@ -119,9 +114,50 @@ export default {
     };
     const addNoti = (noti) => {
       admiStore.globalNotis.unshift(noti);
-      admiStore.notisSinLeer++;
     };
-    onMounted(() => {
+    const readNotis = async () => {
+      try {
+        const response = await api.get("read-notis", sesion.authorizacion);
+        if (response.data.success) {
+          admiStore.notisSinLeer = 0;
+        } else {
+          $q.notify({
+            color: "negative",
+            message:
+              "Error al leer las notificaciones, consulte la consola para mas informacion",
+          });
+        }
+      } catch (error) {
+        console.log(error);
+        $q.notify({
+          color: "negative",
+          message:
+            "Error al leer las notificaciones, consulte la consola para mas informacion",
+        });
+      }
+    };
+    const deleteNotis = async () => {
+      try {
+        const response = await api.get("/delete-notis", sesion.authorizacion);
+        if (response.data.success) {
+          admiStore.globalNotis.length = 0;
+        } else {
+          $q.notify({
+            color: "negative",
+            message:
+              "Error al eliminar las notificaciones, consulte la consola para mas informacion",
+          });
+        }
+      } catch (error) {
+        console.log(error);
+        $q.notify({
+          color: "negative",
+          message:
+            "Error al eliminar las notificaciones, consulte la consola para mas informacion",
+        });
+      }
+    };
+    onMounted(async () => {
       try {
         apiEvents.Echo.channel("SolicitudEnviada").listen(
           "SolicitudEnviada",
@@ -141,7 +177,6 @@ export default {
         apiEvents.Echo.channel("EstadoActualizado").listen(
           "EstadoActualizado",
           (e) => {
-            addNoti(e);
             const index = admiStore.solicitudes.findIndex(
               (s) => s.id == e.solicitud.id
             );
@@ -156,6 +191,20 @@ export default {
             }
           }
         );
+        apiEvents.Echo.private(
+          "App.Models.User." + sesion.data.user.id
+        ).notification((notification) => {
+          addNoti({ data: notification });
+          admiStore.notisSinLeer++;
+        });
+        const response = await api.get("/notis", sesion.authorizacion);
+        const notis = response.data;
+        if (notis.length > 0) {
+          notis.forEach((noti) => {
+            if (!noti.read_at) admiStore.notisSinLeer++;
+            addNoti(noti);
+          });
+        }
       } catch (error) {
         console.log(error);
         $q.notify({
@@ -169,6 +218,8 @@ export default {
     return {
       cerrarSesion,
       admiStore,
+      readNotis,
+      deleteNotis,
     };
   },
 };

@@ -1,5 +1,7 @@
 <template>
   <q-header elevated class="bg-grey-10">
+    <img src="~assets/banner_oficial.png" class="banner" />
+
     <q-toolbar>
       <q-btn
         flat

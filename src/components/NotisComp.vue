@@ -9,17 +9,17 @@
     >
       <q-item-section avatar>
         <q-avatar>
-          <q-icon :name="Boolean(notis.user.admi) ? 'engineering' : 'person'" />
+          <q-icon :name="Boolean(notis.data.admi) ? 'engineering' : 'person'" />
         </q-avatar>
       </q-item-section>
 
       <q-item-section>
-        <q-item-label>{{ notis.user.name }}</q-item-label>
-        <q-item-label caption lines="1">{{ notis.text }}</q-item-label>
+        <q-item-label>{{ notis.data.name }}</q-item-label>
+        <q-item-label caption lines="1">{{ notis.data.text }}</q-item-label>
       </q-item-section>
 
       <q-item-section side>
-        {{ notis.hora }}
+        {{ notis.data.hora }}
       </q-item-section>
     </q-item>
   </div>
