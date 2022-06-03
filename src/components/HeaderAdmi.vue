@@ -25,7 +25,13 @@
       <q-space />
 
       <div class="q-gutter-sm row items-center no-wrap">
-        <q-btn round dense flat icon="person">
+        <q-btn
+          round
+          dense
+          flat
+          icon="person"
+          @click="$emit('changeOpenProfileCard')"
+        >
           <q-tooltip>{{ nombre }}</q-tooltip>
         </q-btn>
         <q-btn round dense flat icon="notifications" @click="readNotis">

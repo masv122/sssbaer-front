@@ -3,6 +3,12 @@
     <header-admi
       @changeDrawer="drawer = !drawer"
       :nombre="sesion.data.user.name"
+      @changeOpenProfileCard="profileCard = !profileCard"
+    />
+    <profile-card
+      v-if="profileCard"
+      :profileCard="profileCard"
+      @changeOpenProfileCard="profileCard = !profileCard"
     />
     <menu-admi :drawer="drawer" @changeDrawer="drawer = !drawer" />
     <q-page-container class="GPL__page-container">
@@ -19,8 +25,9 @@ import { useRouter } from "vue-router";
 import HeaderAdmi from "src/components/HeaderAdmi.vue";
 import MenuAdmi from "src/components/MenuAdmi.vue";
 import MenuStickyAdmi from "src/components/MenuStickyAdmi.vue";
+import ProfileCard from "src/components/ProfileCard.vue";
 export default {
-  components: { MenuStickyAdmi, HeaderAdmi, MenuAdmi },
+  components: { MenuStickyAdmi, HeaderAdmi, MenuAdmi, ProfileCard },
   name: "AdministradorLayout",
   setup() {
     const drawer = ref(false);
@@ -33,6 +40,7 @@ export default {
     }
 
     return {
+      profileCard: ref(false),
       drawer,
       search,
       sesion,
