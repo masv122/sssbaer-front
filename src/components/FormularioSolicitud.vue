@@ -41,22 +41,22 @@
               type="textarea"
             />
 
-        <div>
-          <q-btn
-            label="Enviar  "
-            :disable="enEspera"
-            type="submit"
-            color="primary"
-          >
-            <q-spinner v-show="enEspera" color="danger" size="0.8em" />
-          </q-btn>
-          <q-btn
-            label="Restablecer"
-            type="reset"
-            color="negative"
-            flat
-            class="q-ml-sm"
-          />
+            <q-btn
+              label="Enviar  "
+              :disable="enEspera"
+              type="submit"
+              color="primary"
+            >
+              <q-spinner v-show="enEspera" color="danger" size="0.8em" />
+            </q-btn>
+            <q-btn
+              label="Restablecer"
+              type="reset"
+              color="negative"
+              flat
+              class="q-ml-sm"
+            />
+          </q-form>
         </div>
       </q-card-section>
     </q-card>
