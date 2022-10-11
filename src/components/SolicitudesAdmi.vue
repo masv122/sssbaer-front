@@ -8,103 +8,37 @@
     hide-header
   >
     <template v-slot:top>
-      <q-icon name="view_list" color="primary" size="3em" />
+      <q-icon name="view_list" color="negative" size="3em" />
 
       <q-space />
 
       <q-btn
         class="glossy"
         round
-        color="primary"
+        color="negative"
         icon="refresh"
         @click="admiStore.cargarSolicitudes()"
       />
     </template>
 
     <template v-slot:item="props">
-      <div
-        class="q-pa-xs col-xs-12 col-sm-6 col-md-4 col-lg-3 grid-style-transition"
-        :style="props.selected ? 'transform: scale(0.95);' : ''"
-      >
-        <q-card :class="props.selected ? 'bg-grey-2' : ''">
-          <q-card-section
-            v-if="
-              !!props.row.idAdministrador &&
-              props.row.idAdministrador != sesion.data.user.id
-            "
-          >
-            <q-breadcrumbs class="text-grey">
-              <template v-slot:separator>
-                <q-icon size="1.5em" name="chevron_right" color="primary" />
-              </template>
-              <q-breadcrumbs-el
-                icon="hourglass_empty"
-                :class="!!props.row.enProceso ? 'text-blue' : ''"
-              />
-              <q-breadcrumbs-el
-                icon="check_circle"
-                :class="!!props.row.terminado ? 'text-green' : ''"
-              />
-              s-el icon="verified" />
-            </q-breadcrumbs>
-          </q-card-section>
-          <q-card-actions align="right" v-else>
-            <q-btn
-              :outline="!!props.row.enProceso"
-              :color="!!props.row.enProceso ? 'negative' : 'primary'"
-              :label="!!props.row.enProceso ? 'rechazar' : 'Aceptar'"
-              v-show="
-                (!!!props.row.enProceso && !!!props.row.terminado) ||
-                (props.row.enProceso && !!!props.row.terminado)
-              "
-              @click="
-                props.row.enProceso = !!!props.row.enProceso;
-                admiStore.cambiarProceso(props.row);
-              "
-            />
-            <q-btn
-              color="green"
-              label="Completar"
-              v-show="!!props.row.enProceso || !!props.row.terminado"
-              v-model="props.row.terminado"
-              checked-icon="check"
-              :disable="!!props.row.terminado"
-              unchecked-icon="clear"
-              @click="
-                props.row.enProceso = !!!props.row.enProceso;
-                props.row.terminado = !!!props.row.terminado;
-                admiStore.cambiarProceso(props.row);
-              "
-            />
-          </q-card-actions>
-          <q-separator />
-          <q-list dense>
-            <q-item v-for="col in props.cols" :key="col.name">
-              <q-item-section>
-                <q-item-label>{{ col.label }}</q-item-label>
-              </q-item-section>
-              <q-item-section side>
-                <q-item-label caption>{{ col.value }}</q-item-label>
-              </q-item-section>
-            </q-item>
-          </q-list>
-          <q-separator />
-          <administrador-comp
-            :id="props.row.idAdministrador"
-            v-show="!!props.row.enProceso"
-          />
-        </q-card>
-      </div>
+      <solicitud-item-admi
+        :data="props"
+        :supervisor="supervisor"
+        @cambiarProceso="cambiarProceso"
+        @completarSolicitud="completarSolicitud"
+      />
     </template>
   </q-table>
 </template>
 
 <script>
-import { onMounted, reactive } from "@vue/runtime-core";
+import { onMounted } from "@vue/runtime-core";
 import { useSesion } from "src/stores/sesion";
-import AdministradorComp from "components/AdministradorComp.vue";
 import { useAdmiStore } from "src/stores/admiStore";
 import { apiEvents } from "src/boot/pusher";
+import { useQuasar } from "quasar";
+import SolicitudItemAdmi from "./SolicitudItemAdmi.vue";
 const columns = [
   { name: "fecha", label: "Fecha", field: "created_at" },
   { name: "coordinacion", label: "Coordinacion", field: "coordinacion" },
@@ -123,33 +57,105 @@ const columns = [
 
 export default {
   components: {
-    AdministradorComp,
+    SolicitudItemAdmi,
   },
-  setup() {
+  props: {
+    supervisor: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  setup(props) {
     const sesion = useSesion();
+    const $q = useQuasar();
     const admiStore = useAdmiStore();
+    const cambiarProceso = async (solicitud, key) => {
+      try {
+        solicitud.enProceso = !!!solicitud.enProceso;
+        if (solicitud.enProceso) {
+          solicitud.razonCancelado = null;
+          await admiStore.cambiarProceso(solicitud);
+        } else
+          $q.dialog({
+            title: "Has cancelado una solicitud",
+            message: "¿Porque cancelaste la solicitud?",
+            prompt: {
+              model: "",
+              isValid: (val) => val.length > 2,
+              type: "text",
+            },
+            cancel: true,
+            persistent: true,
+          })
+            .onOk(async (data) => {
+              solicitud.razonCancelado = data;
+              await admiStore.cambiarProceso(solicitud);
+            })
+            .onCancel(() => {
+              admiStore.solicitudes[key].enProceso = !!!solicitud.enProceso;
+            });
+      } catch (error) {
+        console.log(error);
+        $q.notify({
+          color: "negative",
+          message:
+            "Error al cambiar el estado de la solicitud, consulte la consola para mas informacion",
+        });
+      }
+    };
+    const completarSolicitud = async (solicitud, key) => {
+      try {
+        solicitud.enProceso = !!!solicitud.enProceso;
+        solicitud.terminado = !!!solicitud.terminado;
+        if (solicitud.terminado)
+          $q.dialog({
+            title: "Completar solicitud",
+            message: "Indica tus observaciones",
+            prompt: {
+              model: "",
+              isValid: (val) => val.length > 2,
+              type: "text",
+            },
+            cancel: true,
+            persistent: true,
+          })
+            .onOk(async (data) => {
+              solicitud.observacionesAlCompletar = data;
+              await admiStore.cambiarProceso(solicitud);
+            })
+            .onCancel(() => {
+              admiStore.solicitudes[key].enProceso = !!!solicitud.enProceso;
+              admiStore.solicitudes[key].terminado = !!!solicitud.terminado;
+            });
+      } catch (error) {
+        console.log(error);
+        $q.notify({
+          color: "negative",
+          message:
+            "Error al cambiar el estado de la solicitud, consulte la consola para mas informacion",
+        });
+      }
+    };
     onMounted(async () => {
-      await admiStore.cargarSolicitudes();
-      apiEvents.Echo.channel("SolicitudEnviada").listen(
-        "SolicitudEnviada",
-        (e) => {
-          admiStore.solicitudes.push(e.solicitud);
-        }
-      );
-      apiEvents.Echo.channel("EstadoActualizado").listen(
-        "EstadoActualizado",
-        (e) => {
-          const index = admiStore.solicitudes.findIndex(
-            (s) => s.id == e.solicitud.id
-          );
-          admiStore.solicitudes[index] = e.solicitud;
-        }
-      );
+      try {
+        if (props.supervisor) await admiStore.cargarTodasLasSolicitudes();
+        else await admiStore.cargarSolicitudes();
+      } catch (error) {
+        console.log(error);
+        $q.notify({
+          color: "negative",
+          icon: "info",
+          message:
+            "No se ha podido cargar las solicitudes, consulte la consola para mas informacion",
+        });
+      }
     });
     return {
       sesion,
       columns,
       admiStore,
+      cambiarProceso,
+      completarSolicitud,
     };
   },
 };

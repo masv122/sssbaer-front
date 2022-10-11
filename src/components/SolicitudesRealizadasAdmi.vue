@@ -7,16 +7,16 @@
       row-key="id"
     >
       <template v-slot:top>
-        <q-icon name="checklist" color="primary" size="3em" />
+        <q-icon name="checklist" color="negative" size="3em" />
 
         <q-space />
 
         <q-btn
           class="glossy"
           round
-          color="primary"
+          color="negative"
           icon="refresh"
-          @click="admiStore.cargarSolicitudes()"
+          @click="cargarMisSolicitudes()"
         />
       </template>
       <template v-slot:header="props">
@@ -34,6 +34,7 @@
           <q-td auto-width>
             <q-btn
               round
+              flat
               color="negative"
               icon="cancel"
               class="q-mr-md"
@@ -41,26 +42,45 @@
                 (!!!props.row.enProceso && !!!props.row.terminado) ||
                 (props.row.enProceso && !!!props.row.terminado)
               "
-              @click="
-                props.row.enProceso = !!!props.row.enProceso;
-                admiStore.cambiarProceso(props.row);
-              "
-            />
+              @click="cambiarProceso(props.row, props.rowIndex)"
+            >
+              <q-tooltip> Cancelar solicitud </q-tooltip></q-btn
+            >
             <q-btn
+              flat
               round
               color="green"
               icon="check"
-              v-show="!!props.row.enProceso || !!props.row.terminado"
+              v-show="!!props.row.enProceso"
               v-model="props.row.terminado"
               checked-icon="check"
               :disable="!!props.row.terminado"
               unchecked-icon="clear"
-              @click="
-                props.row.enProceso = !!!props.row.enProceso;
-                props.row.terminado = !!!props.row.terminado;
-                admiStore.cambiarProceso(props.row);
+              @click="completarSolicitud(props.row, props.rowIndex)"
+            >
+              <q-tooltip> Completar solicitud </q-tooltip></q-btn
+            >
+            <q-icon
+              name="check_circle_outline"
+              color="positive"
+              size="2em"
+              v-show="
+                Boolean(props.row.terminado) && !Boolean(props.row.confirmada)
               "
-            />
+            >
+              <q-tooltip> La solicitud ha sido completada </q-tooltip></q-icon
+            >
+            <q-icon
+              name="verified"
+              color="positive"
+              size="2em"
+              v-show="Boolean(props.row.confirmada)"
+            >
+              <q-tooltip>
+                La solicitud fue marcada como completada por el usuario que la
+                envio
+              </q-tooltip></q-icon
+            >
           </q-td>
 
           <q-td v-for="col in props.cols" :key="col.name" :props="props">
@@ -72,10 +92,13 @@
   </div>
 </template>
 <script>
-import { onMounted, ref, reactive } from "@vue/runtime-core";
-import { useSesion } from "stores/sesion";
+import { onMounted, reactive } from "@vue/runtime-core";
 import { useAdmiStore } from "src/stores/admiStore";
+import { apiEvents } from "src/boot/pusher";
+import { useQuasar } from "quasar";
 const columns = [
+  { name: "id", label: "ID", field: "id" },
+  { name: "nombre", label: "Nombre", field: "nombre" },
   { name: "coordinacion", label: "Coordinacion", field: "coordinacion" },
   { name: "problema", label: "Tipo de problema", field: "problema" },
   {
@@ -83,18 +106,106 @@ const columns = [
     label: "Informacion adicional",
     field: "comentarioAdicional",
   },
+  {
+    name: "observacionesAlCompletar",
+    label: "Observaciones",
+    field: "observacionesAlCompletar",
+  },
 ];
 
 export default {
   setup() {
-    const sesion = useSesion();
     const admiStore = useAdmiStore();
+    const $q = useQuasar();
     const solicitudes = reactive([]);
-    onMounted(() => {});
+    const cambiarProceso = (solicitud, key) => {
+      solicitud.enProceso = !!!solicitud.enProceso;
+      if (solicitud.enProceso) admiStore.cambiarProceso(solicitud);
+      else
+        $q.dialog({
+          title: "Has cancelado una solicitud",
+          message: "¿Porque cancelaste la solicitud?",
+          prompt: {
+            model: "",
+            isValid: (val) => val.length > 2,
+            type: "text",
+          },
+          cancel: true,
+          persistent: true,
+        })
+          .onOk((data) => {
+            solicitud.razonCancelado = data;
+            admiStore.cambiarProceso(solicitud);
+          })
+          .onCancel(() => {
+            admiStore.misSolicitudes[key].enProceso = !!!solicitud.enProceso;
+          });
+    };
+    const completarSolicitud = (solicitud, key) => {
+      solicitud.enProceso = !!!solicitud.enProceso;
+      solicitud.terminado = !!!solicitud.terminado;
+      if (solicitud.terminado)
+        $q.dialog({
+          title: "Completar solicitud",
+          message: "Indica tus observaciones",
+          prompt: {
+            model: "",
+            isValid: (val) => val.length > 2,
+            type: "text",
+          },
+          cancel: true,
+          persistent: true,
+        })
+          .onOk((data) => {
+            solicitud.observacionesAlCompletar = data;
+            admiStore.cambiarProceso(solicitud);
+          })
+          .onCancel(() => {
+            admiStore.misSolicitudes[key].enProceso = !!!solicitud.enProceso;
+            admiStore.misSolicitudes[key].terminado = !!!solicitud.terminado;
+          });
+    };
+    const cargarMisSolicitudes = async () => {
+      try {
+        await admiStore.cargarMisSolicitudes();
+      } catch (error) {
+        console.log(error);
+        $q.notify({
+          color: "negative",
+          icon: "info",
+          message:
+            "No se ha podido cargar las solocitudes, para mas informacion  revise la consola",
+        });
+      }
+    };
+    onMounted(async () => {
+      try {
+        await cargarMisSolicitudes();
+        apiEvents.Echo.channel("EstadoActualizado").listen(
+          "EstadoActualizado",
+          (e) => {
+            const index = admiStore.solicitudes.findIndex(
+              (s) => s.id == e.solicitud.id
+            );
+            admiStore.solicitudes[index] = e.solicitud;
+          }
+        );
+      } catch (error) {
+        console.log(error);
+        $q.notify({
+          color: "negative",
+          icon: "info",
+          message: "No se ha podido conectar al servidor de websockets",
+        });
+      }
+    });
     return {
       columns,
       solicitudes,
       admiStore,
+      cambiarProceso,
+      completarSolicitud,
+      cargarMisSolicitudes,
     };
   },
 };

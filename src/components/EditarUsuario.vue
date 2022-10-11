@@ -103,6 +103,7 @@
             flat
             icon="cancel"
             class="q-ml-sm"
+            @click="modoEditar = false"
           />
         </div>
       </q-form>

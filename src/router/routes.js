@@ -17,13 +17,9 @@ const routes = [
         ],
       },
       {
-        path: "/crear-usuario",
-        redirect: { name: "crear usuario" },
-      },
-      {
         path: "/usuario",
         name: "usuario",
-        redirect: { name: "crear solicitud" },
+        redirect: { name: "solicitudes usuario" },
         component: () => import("layouts/UsuarioLayout.vue"),
         children: [
           {
@@ -32,14 +28,14 @@ const routes = [
             component: () => import("pages/UsuarioPage.vue"),
             children: [
               {
-                path: "crear-solicitud",
-                name: "crear solicitud",
-                component: () => import("components/FormularioSolicitud.vue"),
-              },
-              {
                 name: "solicitudes usuario",
                 path: "solicitudes-usuario",
                 component: () => import("components/SolicitudesUsuario.vue"),
+              },
+              {
+                path: "crear-solicitud",
+                name: "crear solicitud",
+                component: () => import("components/FormularioSolicitud.vue"),
               },
             ],
           },
@@ -87,6 +83,29 @@ const routes = [
                 ],
               },
             ],
+          },
+        ],
+      },
+      {
+        path: "supervisor",
+        name: "supervisor",
+        redirect: { name: "supervisor dashboard" },
+        component: () => import("layouts/SupervisorLayout.vue"),
+        children: [
+          {
+            path: "dashboard",
+            name: "supervisor dashboard",
+            component: () => import("pages/Dashboard.vue"),
+          },
+          {
+            path: "solicitudes",
+            name: "estadisticas solicitudes",
+            component: () => import("pages/SolicitudesEstadisticas.vue"),
+          },
+          {
+            path: "administradores",
+            name: "estadisticas administradores",
+            component: () => import("pages/AdministradoresEstadisticas.vue"),
           },
         ],
       },

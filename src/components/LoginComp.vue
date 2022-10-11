@@ -1,16 +1,14 @@
 <template>
-  <q-card class="login">
+  <q-card flat bordered style="width: 400px; height: 420px">
     <q-card-section class="q-pt-none">
       <div class="q-pa-md">
-        <q-form @submit.prevent.stop="onSubmit" class="q-gutter-md">
-          <div class="text-h5 text-negative">Ingresa tus credenciales</div>
-          <q-separator />
+        <q-form @submit.prevent.stop="onSubmit" class="q-gutter-sm">
+          <div class="text-h5 text-center text-negative q-mb-lg">Ingreso</div>
           <q-input
-            filled
+            color="negative"
             ref="refcorreo"
             v-model="correo"
-            label="Correo *"
-            hint="Ingrese su correo"
+            label="Correo"
             lazy-rules
             :rules="[
               (val) => (val && val.length > 0) || 'Porfavor ingrese el correo',
@@ -18,13 +16,12 @@
           />
 
           <q-input
+            color="negative"
             v-model="contraseña"
-            filled
             lazy-rules
             ref="refContraseña"
-            label="Contraseña *"
+            label="Contraseña"
             :type="esVisible ? 'password' : 'text'"
-            hint="Ingrese la contraseña"
             :rules="[
               (val) =>
                 (val && val.length > 0) || 'Porfavor ingrese una contraseña',
@@ -40,6 +37,7 @@
           </q-input>
 
           <q-checkbox
+            color="negative"
             v-model="recordar"
             label="Recordar sesion"
             checked-icon="task_alt"
@@ -94,23 +92,37 @@ export default {
       esVisible,
       recordar,
       async onSubmit() {
-        if (refcorreo.value.hasError || refContraseña.value.hasError) {
-          $q.notify({
-            color: "negative",
-            message: "Complete los datos",
-          });
-        } else {
-          const result = await sesion.login(correo.value, contraseña.value);
-          if (result) {
-            if (recordar.value) $q.cookies.set("token", sesion.data.token);
-            else $q.cookies.remove("token");
-            if (sesion.data.user.admi) router.push({ name: "administrador" });
-            else router.push({ name: "usuario" });
-          } else
+        try {
+          if (refcorreo.value.hasError || refContraseña.value.hasError) {
             $q.notify({
-              type: "warning",
-              message: "Usuario/Contraseña invalidas",
+              color: "negative",
+              message: "Complete los datos",
             });
+          } else {
+            const result = await sesion.login(correo.value, contraseña.value);
+            if (result) {
+              if (recordar.value)
+                $q.cookies.set("token", sesion.data.token, {
+                  sameSite: "Lax",
+                });
+              else $q.cookies.remove("token");
+              if (
+                !Boolean(sesion.data.user.admi) &&
+                !Boolean(sesion.data.user.supervisor)
+              )
+                router.push({ name: "usuario" });
+              else if (Boolean(sesion.data.user.admi))
+                router.push({ name: "administrador" });
+              else if (Boolean(sesion.data.user.supervisor))
+                router.push({ name: "supervisor" });
+            } else
+              $q.notify({
+                type: "warning",
+                message: "Usuario/Contraseña invalidas",
+              });
+          }
+        } catch (error) {
+          console.log(error);
         }
       },
     };

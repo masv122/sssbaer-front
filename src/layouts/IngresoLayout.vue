@@ -1,27 +1,16 @@
 <template>
-  <q-layout view="hHh Lpr fFf" class="bg-negative">
-    <q-header elevated class="bg-white text-negative">
-      <ingreso-header />
-    </q-header>
-    <div class="column justify-end">
-      <div class="col self-center q-mt-lg">
-        <q-page-container>
-          <router-view />
-        </q-page-container>
-      </div>
-    </div>
-    <q-footer elevated class="bg-white text-black"> </q-footer>
+  <q-layout view="hHh Lpr fFf" class="bg-grey-2">
+    <q-page-container>
+      <ingreso-page />
+    </q-page-container>
   </q-layout>
 </template>
 
 <script>
-import IngresoHeader from "components/IngresoHeader.vue";
-
+import IngresoPage from "src/pages/IngresoPage.vue";
 export default {
   name: "IngresoLayout",
-  components: {
-    IngresoHeader,
-  },
+  components: { IngresoPage },
 };
 </script>
 <style scoped></style>

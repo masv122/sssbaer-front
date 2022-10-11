@@ -11,6 +11,7 @@ export const useSesion = defineStore("sesion", {
         email: "",
         id: "",
         admi: null,
+        supervisor: null,
       },
       token: {
         access_token: "",

@@ -1,8 +1,8 @@
 <template>
-  <q-header elevated class="bg-white text-grey-8" height-hint="64">
+  <q-header elevated class="bg-white" height-hint="64">
     <img src="~assets/banner_oficial.png" class="banner" />
 
-    <q-toolbar class="GPL__toolbar" style="height: 64px">
+    <q-toolbar class="bg-white text-negative" style="height: 64px">
       <q-btn
         flat
         dense
@@ -19,38 +19,51 @@
         shrink
         class="row items-center no-wrap"
       >
-        <span class="q-ml-sm">Sistema de solicitud de ayuda del BAER</span>
+        <span class="q-ml-sm">Asisteme BAER</span>
       </q-toolbar-title>
 
       <q-space />
 
       <div class="q-gutter-sm row items-center no-wrap">
-        <q-btn round dense flat color="grey-8" icon="person">
-          <q-tooltip>{{ nombre }}</q-tooltip>
-        </q-btn>
         <q-btn
           round
           dense
-          @click="notificacionSolicitudNueva = 0"
           flat
-          color="grey-8"
-          icon="notifications"
+          icon="person"
+          @click="$emit('changeOpenProfileCard')"
         >
+          <q-tooltip>{{ nombre }}</q-tooltip>
+        </q-btn>
+        <q-btn round dense flat icon="notifications" @click="readNotis">
           <q-badge
-            v-show="notificacionSolicitudNueva > 0"
             color="red"
             text-color="white"
             floating
+            v-show="admiStore.notisSinLeer > 0"
           >
-            {{ notificacionSolicitudNueva }}
+            {{ admiStore.notisSinLeer }}
           </q-badge>
-          <q-tooltip>{{
-            notificacionSolicitudNueva > 0
-              ? "Borrar notificaciones"
-              : "Notificaciones"
-          }}</q-tooltip>
+          <q-menu>
+            <q-list style="min-width: 100px">
+              <notis-comp />
+              <q-card class="text-center no-shadow no-border">
+                <q-btn
+                  label="limpiar"
+                  style="max-width: 120px !important"
+                  flat
+                  dense
+                  class="text-indigo-8"
+                  v-if="admiStore.globalNotis.length > 0"
+                  @click="deleteNotis"
+                />
+                <q-banner v-else rounded class="bg-grey-3">
+                  No hay notificaciones
+                </q-banner>
+              </q-card>
+            </q-list>
+          </q-menu>
         </q-btn>
-        <q-btn round dense flat color="grey-8" @click="cerrarSesion()">
+        <q-btn round dense flat @click="cerrarSesion()">
           <q-icon name="logout" />
           <q-tooltip>Salir</q-tooltip>
         </q-btn>
@@ -60,11 +73,16 @@
 </template>
 
 <script>
-import { ref } from "@vue/reactivity";
 import { useRouter } from "vue-router";
 import { useQuasar } from "quasar";
 import { useSesion } from "src/stores/sesion";
+import { useAdmiStore } from "src/stores/admiStore";
+import NotisComp from "./NotisComp.vue";
+import { onMounted } from "@vue/runtime-core";
+import { apiEvents } from "src/boot/pusher";
+import { api } from "src/boot/axios";
 export default {
+  components: { NotisComp },
   name: "HeaderAdmi",
   props: {
     nombre: {
@@ -73,10 +91,10 @@ export default {
     },
   },
   setup() {
-    const notificacionSolicitudNueva = ref(-1);
     const sesion = useSesion();
     const $q = useQuasar();
     const router = useRouter();
+    const admiStore = useAdmiStore();
     const cerrarSesion = async () => {
       try {
         const response = await sesion.logout();
@@ -96,11 +114,118 @@ export default {
           message:
             "Error al cerrar la sesion, consulte la consola para mas informacion",
         });
+      } finally {
+        router.push({ name: "ingreso" });
       }
     };
+    const addNoti = (noti) => {
+      admiStore.globalNotis.unshift(noti);
+    };
+    const readNotis = async () => {
+      try {
+        const response = await api.get("read-notis", sesion.authorizacion);
+        if (response.data.success) {
+          admiStore.notisSinLeer = 0;
+        } else {
+          $q.notify({
+            color: "negative",
+            message:
+              "Error al leer las notificaciones, consulte la consola para mas informacion",
+          });
+        }
+      } catch (error) {
+        console.log(error);
+        $q.notify({
+          color: "negative",
+          message:
+            "Error al leer las notificaciones, consulte la consola para mas informacion",
+        });
+      }
+    };
+    const deleteNotis = async () => {
+      try {
+        const response = await api.get("/delete-notis", sesion.authorizacion);
+        if (response.data.success) {
+          admiStore.globalNotis.length = 0;
+        } else {
+          $q.notify({
+            color: "negative",
+            message:
+              "Error al eliminar las notificaciones, consulte la consola para mas informacion",
+          });
+        }
+      } catch (error) {
+        console.log(error);
+        $q.notify({
+          color: "negative",
+          message:
+            "Error al eliminar las notificaciones, consulte la consola para mas informacion",
+        });
+      }
+    };
+    onMounted(async () => {
+      try {
+        apiEvents.Echo.channel("SolicitudEnviada").listen(
+          "SolicitudEnviada",
+          (e) => {
+            addNoti(e);
+            console.log(e);
+            e.solicitud.name = e.user.name;
+            admiStore.solicitudes.push(e.solicitud);
+            $q.notify({
+              message: `${e.user.name} ha enviado una nueva solicitud.`,
+              icon: "announcement",
+              position: "top-right",
+              color: "positive",
+            });
+          }
+        );
+        apiEvents.Echo.channel("EstadoActualizado").listen(
+          "EstadoActualizado",
+          (e) => {
+            const index = admiStore.solicitudes.findIndex(
+              (s) => s.id == e.solicitud.id
+            );
+            admiStore.solicitudes[index] = e.solicitud;
+            if (e.solicitud.idAdministrador != sesion.data.user.id) {
+              $q.notify({
+                color: "info",
+                icon: "info",
+                position: "top-right",
+                message: `${e.user.name} ha ${e.tipo} una solicitud.`,
+              });
+            }
+          }
+        );
+        apiEvents.Echo.private(
+          "App.Models.User." + sesion.data.user.id
+        ).notification((notification) => {
+          addNoti({ data: notification });
+          admiStore.notisSinLeer++;
+        });
+        const response = await api.get("/notis", sesion.authorizacion);
+        const notis = response.data;
+        if (notis.length > 0) {
+          notis.forEach((noti) => {
+            if (!noti.read_at) admiStore.notisSinLeer++;
+            addNoti(noti);
+          });
+        }
+      } catch (error) {
+        console.log(error);
+        $q.notify({
+          color: "negative",
+          icon: "info",
+          message:
+            "No se ha podido conectar al servidor de websockets, consulte la consola para mas informacion",
+        });
+      }
+    });
     return {
-      notificacionSolicitudNueva,
       cerrarSesion,
+      admiStore,
+      readNotis,
+      deleteNotis,
     };
   },
 };

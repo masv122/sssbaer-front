@@ -1,4 +1,4 @@
-import { Cookies } from "quasar";
+import { Cookies, Notify } from "quasar";
 import { boot } from "quasar/wrappers";
 import { useSesion } from "src/stores/sesion";
 // "async" is optional;
@@ -18,6 +18,11 @@ export default boot(async ({ app, store, router }) => {
       }
     } catch (error) {
       console.log(error);
+      Notify.create({
+        color: "negative",
+        message:
+          "Ha ocurrido un error en la autenticacion, revise la consola para mas informacion",
+      });
     }
   } else
     router.push({
@@ -34,6 +39,11 @@ export default boot(async ({ app, store, router }) => {
       else next();
     } catch (error) {
       console.log(error);
+      Notify.create({
+        color: "negative",
+        message:
+          "Ha ocurrido un error en el direccionamiento, revise la consola para mas informacion",
+      });
       next({
         name: "ingreso",
       });

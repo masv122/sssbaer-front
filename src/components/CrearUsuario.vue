@@ -180,6 +180,7 @@ export default {
             email: correo.value,
             password: contraseña.value,
             admi: tipoDeCuenta.value,
+            supervisor: false
           };
           try {
             await api.post("/register", usuario);

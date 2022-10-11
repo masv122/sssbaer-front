@@ -6,19 +6,31 @@
       <q-card-section class="row justify-between">
         <q-breadcrumbs class="text-grey">
           <template v-slot:separator>
-            <q-icon size="1.5em" name="chevron_right" color="primary" />
+            <q-icon size="1.5em" name="chevron_right" color="negative" />
           </template>
           <q-breadcrumbs-el
             icon="hourglass_empty"
-            :class="data.row.enProceso ? 'text-blue' : ''"
+            :class="data.row.enProceso ? 'text-negative' : ''"
           />
           <q-breadcrumbs-el
             icon="check_circle"
-            :class="data.row.terminado ? 'text-green' : ''"
+            :class="
+              data.row.terminado && !data.row.confirmada ? 'text-green' : ''
+            "
           />
-          <q-breadcrumbs-el icon="verified" />
+          <q-breadcrumbs-el
+            icon="verified"
+            :class="data.row.confirmada ? 'text-green' : ''"
+          />
         </q-breadcrumbs>
-        <q-badge color="blue"> ID: {{ data.row.id }} </q-badge>
+        <q-btn
+          color="green"
+          label="Confrimar"
+          v-show="data.row.terminado && !data.row.confirmada"
+          checked-icon="check"
+          @click="confirmarSolicitud(data.row)"
+        />
+        <q-badge color="negative"> ID: {{ data.row.id }} </q-badge>
       </q-card-section>
       <q-separator />
       <q-list dense>
@@ -36,6 +48,14 @@
         :id="data.row.idAdministrador"
         v-show="data.row.enProceso || data.row.terminado"
       />
+      <q-card-actions
+        v-show="data.row.razonCancelado && !data.row.idAdministrador"
+      >
+        <div class="q-ml-xs">
+          La solicitud ha sido cancelada, Razon:
+          {{ data.row.razonCancelado }}
+        </div>
+      </q-card-actions>
     </q-card>
   </div>
 </template>
@@ -44,22 +64,66 @@
 import { onMounted } from "@vue/runtime-core";
 import { apiEvents } from "src/boot/pusher";
 import AdministradorComp from "components/AdministradorComp.vue";
+import { useQuasar } from "quasar";
+import { api } from "src/boot/axios";
+import { useSesion } from "src/stores/sesion";
 export default {
   components: { AdministradorComp },
   name: "SolicitudItem",
   props: {
     data: Object,
   },
-  setup(props) {
+  emits: ["updateSolicitud"],
+  setup(props, ctx) {
+    const $q = useQuasar();
+    const sesion = useSesion();
     onMounted(() => {
-      apiEvents.Echo.private(`solicitud.${props.data.row.id}`).listen(
-        "SolicitudUsuarioActualizada",
-        (e) => {
-          console.log(e);
-        }
-      );
+      try {
+        apiEvents.Echo.private(`solicitudes.${props.data.row.id}`).listen(
+          "SolicitudUsuarioActualizada",
+          (e) => {
+            ctx.emit("updateSolicitud", e.solicitud);
+            if (!e.solicitud.confirmada)
+              $q.notify({
+                color: "info",
+                icon: "info",
+                message: `Solicitud con ID: ${e.solicitud.id} con problema de ${e.solicitud.problema} ha actualizado su status`,
+                position: "top-right",
+              });
+          }
+        );
+      } catch (error) {
+        console.log(error);
+        $q.notify({
+          color: "negative",
+          icon: "info",
+          message: "No se ha podido conectar al servidor de websockets",
+        });
+      }
     });
-    return {};
+    const confirmarSolicitud = async (solicitud) => {
+      try {
+        solicitud.confirmada = true;
+        const response = await api.put(
+          `/solicitudes/${solicitud.id}`,
+          solicitud,
+          sesion.authorizacion
+        );
+        if (response.data.message === "Update successfully")
+          $q.notify({
+            type: "positive",
+            message: `Solicitud con ID: ${response.data.solicitud.id} marcada como confirmada`,
+          });
+      } catch (error) {
+        console.log(error);
+        $q.notify({
+          type: "negative",
+          message:
+            "Error al confirmar la solicitud, revise la consola para mas informacion",
+        });
+      }
+    };
+    return { confirmarSolicitud };
   },
 };
 </script>

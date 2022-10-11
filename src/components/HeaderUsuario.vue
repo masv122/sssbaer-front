@@ -1,14 +1,8 @@
 <template>
-  <q-header elevated class="bg-cyan-8">
+  <q-header elevated class="bg-white">
     <img src="~assets/banner_oficial.png" class="banner" />
 
-    <q-toolbar class="bg-negative">
-      <q-icon name="flight_takeoff" size="3em" />
-      <q-toolbar-title>{{
-        $q.screen.width > 500
-          ? "Sistema de solicitud de servicios del BAER"
-          : "SSSB"
-      }}</q-toolbar-title>
+    <q-toolbar class="bg-white text-negative">
       <q-btn
         v-show="$q.screen.width < 1000"
         @click="$emit('changeDrawer')"
@@ -17,6 +11,8 @@
         dense
         icon="menu"
       />
+      <q-icon name="flight_takeoff" size="3em" />
+      <q-space />
       <q-btn flat @click="cerrarSesion()" round dense icon="logout" />
     </q-toolbar>
   </q-header>
@@ -47,6 +43,8 @@ export default {
         }
       } catch (error) {
         console.log(error);
+      } finally {
+        router.push({ name: "ingreso" });
       }
     };
     return {
