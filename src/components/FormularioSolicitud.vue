@@ -37,7 +37,14 @@
         />
 
         <div>
-          <q-btn label="Enviar" type="submit" color="primary" />
+          <q-btn
+            label="Enviar  "
+            :disable="enEspera"
+            type="submit"
+            color="primary"
+          >
+            <q-spinner v-show="enEspera" color="danger" size="0.8em" />
+          </q-btn>
           <q-btn
             label="Restablecer"
             type="reset"
@@ -71,6 +78,7 @@ export default {
       problema.value = null;
       comentarioAdicional.value = "";
     };
+    const enEspera = ref(false);
     return {
       problema,
       coordinacion,
@@ -85,8 +93,10 @@ export default {
       tipoDeProblema: ["Internet", "Equipo", "Otro"],
       refProblema,
       refCoordinacion,
+      enEspera,
 
       async onSubmit() {
+        enEspera.value = true;
         refProblema.value.validate();
         refCoordinacion.value.validate();
         if (refProblema.value.hasError || refCoordinacion.value.hasError) {
@@ -121,12 +131,14 @@ export default {
                 message: "datos invalidos",
               });
             resetForm();
+            enEspera.value = false;
           } catch (error) {
             console.log(error.response);
             $q.notify({
               color: "negative",
               message: "Error al crear la solicitud",
             });
+            enEspera.value = false;
           }
         }
       },
