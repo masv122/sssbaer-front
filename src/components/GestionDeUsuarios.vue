@@ -49,7 +49,7 @@
                 size="sm"
                 rounded
                 icon="cancel"
-                @click="cargarPerfil(props.row)"
+                @click="eliminarPerfil(props.row)"
               />
             </q-card-actions>
             <q-separator />
@@ -130,6 +130,45 @@ export default {
       modoEditar.value = true;
       usuario.data = user;
     };
+    const eliminarPerfil = (user) => {
+      confirm(user);
+    };
+    function confirm(user) {
+      $q.dialog({
+        title: "Confirme",
+        message: "¿Seguro que quiere eliminar este usuario?",
+        cancel: true,
+        persistent: true,
+      })
+        .onOk(async () => {
+          console.log(user);
+          try {
+            const response = await api.post(
+              "/delete-user",
+              user,
+              sesion.authorizacion
+            );
+            if (response.data.message === "Deleted")
+              $q.notify({
+                color: "positive",
+                message: "Usuario eliminado",
+              });
+          } catch (error) {
+            console.log(error);
+            $q.notify({
+              color: "negative",
+              message:
+                "Error al eliminar el usuario, consulte la consola para mas informacion",
+            });
+          }
+        })
+        .onCancel(() => {
+          // console.log('>>>> Cancel')
+        })
+        .onDismiss(() => {
+          // console.log('I am triggered on both OK and Cancel')
+        });
+    }
     return {
       columns,
       usuarios,
@@ -138,6 +177,7 @@ export default {
       cargarPerfil,
       modoEditar,
       tipo,
+      eliminarPerfil,
       model: ref("Todes"),
       options: ["Usuaries", "Administradores", "Todes"],
     };
