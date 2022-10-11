@@ -106,6 +106,7 @@ import AdministradorComp from "components/AdministradorComp.vue";
 import { useAdmiStore } from "src/stores/admiStore";
 import { apiEvents } from "src/boot/pusher";
 const columns = [
+  { name: "fecha", label: "Fecha", field: "created_at" },
   { name: "coordinacion", label: "Coordinacion", field: "coordinacion" },
   { name: "problema", label: "Tipo de problema", field: "problema" },
   {
